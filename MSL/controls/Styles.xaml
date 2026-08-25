@@ -223,55 +223,44 @@
                             <Setter TargetName="Rect" Property="Fill" Value="{DynamicResource DarkPrimaryBrush}"/>
                             <Setter TargetName="Border" Property="Background" Value="{DynamicResource BorderBackground}"/>
                         </Trigger>
-                        <!-- WinUI3 风格按压反馈：按下时图标区域轻微缩小“下陷”，松开/移出时弹回 -->
-                        <EventTrigger RoutedEvent="Mouse.MouseDown">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleX" To="0.92" Duration="0:0:0.08">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CircleEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                    <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleY" To="0.92" Duration="0:0:0.08">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CircleEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                        <EventTrigger RoutedEvent="Mouse.MouseUp">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.15">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CircleEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                    <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.15">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CircleEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                        <EventTrigger RoutedEvent="Mouse.MouseLeave">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.15">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CircleEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                    <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.15">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CircleEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
+                        <!-- WinUI3 风格按压反馈：按下时整项轻微缩小“下陷”，松开/移出时弹回。
+                             侧边栏用 ListBoxBehaviors.DisableDragSelection 屏蔽拖动选择，会在隧道阶段把
+                             PreviewMouseLeftButtonDown 标为 Handled，冒泡的 Mouse.MouseDown/MouseUp 因此不会发出，
+                             不能用 EventTrigger，改由行为类的 IsPressed 附加属性驱动。 -->
+                        <DataTrigger Binding="{Binding (local:ListBoxBehaviors.IsPressed), RelativeSource={RelativeSource Self}}" Value="True">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleX" To="0.92" Duration="0:0:0.08">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CircleEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleY" To="0.92" Duration="0:0:0.08">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CircleEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.15">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CircleEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.15">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CircleEase EasingMode="EaseOut"/>
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

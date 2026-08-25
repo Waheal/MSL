@@ -1,4 +1,5 @@
 ﻿using MahApps.Metro.IconPacks;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -187,6 +188,44 @@ namespace MSL.controls
 
         public static void SetDisableDragSelection(ListBox listBox, bool value) => listBox.SetValue(DisableDragSelectionProperty, value);
 
+        /// <summary>
+        /// 标记 ListBoxItem 当前是否被鼠标按住，供模板驱动按压动画。
+        /// DisableDragSelection 必须吞掉 PreviewMouseLeftButtonDown 才能屏蔽拖动选择，
+        /// 而隧道事件一旦 Handled，WPF 就不再抛出冒泡的 Mouse.MouseDown/MouseUp，
+        /// 模板里基于这两个事件的 EventTrigger 永远不会触发，所以改用附加属性传递按压状态。
+        /// </summary>
+        public static readonly DependencyProperty IsPressedProperty =
+            DependencyProperty.RegisterAttached(
+                "IsPressed",
+                typeof(bool),
+                typeof(ListBoxBehaviors),
+                new PropertyMetadata(false));
+
+        public static bool GetIsPressed(ListBoxItem item) => (bool)item.GetValue(IsPressedProperty);
+
+        public static void SetIsPressed(ListBoxItem item, bool value) => item.SetValue(IsPressedProperty, value);
+
+        // 用弱引用持有，避免按住时窗体被关闭导致 ListBoxItem 及其可视树被静态字段拖住不放
+        private static WeakReference<ListBoxItem> _pressedItem;
+
+        private static ListBoxItem PressedItem =>
+            _pressedItem != null && _pressedItem.TryGetTarget(out var item) ? item : null;
+
+        private static void UpdatePressedItem(ListBoxItem item)
+        {
+            var previous = PressedItem;
+            if (ReferenceEquals(previous, item))
+                return;
+
+            if (previous != null)
+                SetIsPressed(previous, false);
+
+            _pressedItem = item == null ? null : new WeakReference<ListBoxItem>(item);
+
+            if (item != null)
+                SetIsPressed(item, true);
+        }
+
         private static void OnDisableDragSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is not ListBox listBox)
@@ -195,11 +234,13 @@ namespace MSL.controls
             listBox.PreviewMouseLeftButtonDown -= ListBox_PreviewMouseLeftButtonDown;
             listBox.PreviewMouseLeftButtonUp -= ListBox_PreviewMouseLeftButtonUp;
             listBox.PreviewMouseMove -= ListBox_PreviewMouseMove;
+            listBox.MouseLeave -= ListBox_MouseLeave;
             if ((bool)e.NewValue)
             {
                 listBox.PreviewMouseLeftButtonDown += ListBox_PreviewMouseLeftButtonDown;
                 listBox.PreviewMouseLeftButtonUp += ListBox_PreviewMouseLeftButtonUp;
                 listBox.PreviewMouseMove += ListBox_PreviewMouseMove;
+                listBox.MouseLeave += ListBox_MouseLeave;
             }
         }
 
@@ -207,17 +248,33 @@ namespace MSL.controls
         {
             if (IsScrollBarsHitTest(e.OriginalSource as DependencyObject))
                 return;
+
+            UpdatePressedItem(FindParent<ListBoxItem>(e.OriginalSource as DependencyObject));
             e.Handled = true;
         }
 
         private static void ListBox_PreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
-                e.Handled = true;
+            if (e.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            // 按住后滑到别的项上就撤掉按压反馈，避免松手时还停在按下状态
+            var pressed = PressedItem;
+            if (pressed != null && !ReferenceEquals(FindParent<ListBoxItem>(e.OriginalSource as DependencyObject), pressed))
+                UpdatePressedItem(null);
+
+            e.Handled = true;
+        }
+
+        private static void ListBox_MouseLeave(object sender, MouseEventArgs e)
+        {
+            UpdatePressedItem(null);
         }
 
         private static void ListBox_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            UpdatePressedItem(null);
+
             if (sender is not ListBox listBox)
                 return;
             if (IsScrollBarsHitTest(e.OriginalSource as DependencyObject))
