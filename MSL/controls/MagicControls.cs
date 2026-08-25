@@ -1,6 +1,7 @@
 ﻿using MahApps.Metro.IconPacks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -191,15 +192,69 @@ namespace MSL.controls
             if (d is not ListBox listBox)
                 return;
 
+            listBox.PreviewMouseLeftButtonDown -= ListBox_PreviewMouseLeftButtonDown;
+            listBox.PreviewMouseLeftButtonUp -= ListBox_PreviewMouseLeftButtonUp;
             listBox.PreviewMouseMove -= ListBox_PreviewMouseMove;
             if ((bool)e.NewValue)
+            {
+                listBox.PreviewMouseLeftButtonDown += ListBox_PreviewMouseLeftButtonDown;
+                listBox.PreviewMouseLeftButtonUp += ListBox_PreviewMouseLeftButtonUp;
                 listBox.PreviewMouseMove += ListBox_PreviewMouseMove;
+            }
+        }
+
+        private static void ListBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (IsScrollBarsHitTest(e.OriginalSource as DependencyObject))
+                return;
+            e.Handled = true;
         }
 
         private static void ListBox_PreviewMouseMove(object sender, MouseEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
                 e.Handled = true;
+        }
+
+        private static void ListBox_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not ListBox listBox)
+                return;
+            if (IsScrollBarsHitTest(e.OriginalSource as DependencyObject))
+                return;
+
+            var pos = e.GetPosition(listBox);
+            var hit = VisualTreeHelper.HitTest(listBox, pos);
+            var listBoxItem = FindParent<ListBoxItem>(hit.VisualHit as DependencyObject);
+            if (listBoxItem != null)
+            {
+                var item = listBoxItem.DataContext ?? listBoxItem;
+                var index = listBox.Items.IndexOf(item);
+                if (index >= 0)
+                    listBox.SelectedItem = item;
+            }
+        }
+
+        private static bool IsScrollBarsHitTest(DependencyObject source)
+        {
+            while (source != null)
+            {
+                if (source is ScrollBar)
+                    return true;
+                source = VisualTreeHelper.GetParent(source);
+            }
+            return false;
+        }
+
+        private static T FindParent<T>(DependencyObject child) where T : DependencyObject
+        {
+            while (child != null)
+            {
+                if (child is T typed)
+                    return typed;
+                child = VisualTreeHelper.GetParent(child);
+            }
+            return null;
         }
     }
 
