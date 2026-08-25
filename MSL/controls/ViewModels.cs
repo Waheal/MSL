@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Media;
 
@@ -26,13 +27,27 @@ namespace MSL.controls
         public string Icon { set; get; }
         public string Name { set; get; }
         public string WebsiteUrl { set; get; }
+        public string Description { set; get; }
+        public string Author { set; get; }
+        public string DownloadCountText { set; get; }
+        public string LastUpdatedText { set; get; }
+        public string CategoryText { set; get; }
+        public List<string> CategoryTags { set; get; }
 
-        public DM_ModsInfo(string id, string icon, string name, string websiteurl)
+        public DM_ModsInfo(string id, string icon, string name, string websiteurl,
+            string description = "", string author = "", string downloadCountText = "",
+            string lastUpdatedText = "", string categoryText = "", List<string> categoryTags = null)
         {
             ID = id;
             Icon = icon;
             Name = name;
             WebsiteUrl = websiteurl;
+            Description = description;
+            Author = author;
+            DownloadCountText = downloadCountText;
+            LastUpdatedText = lastUpdatedText;
+            CategoryText = categoryText;
+            CategoryTags = categoryTags ?? new List<string>();
         }
     }
 

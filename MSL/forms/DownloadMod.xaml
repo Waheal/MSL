@@ -7,141 +7,414 @@
         xmlns:controls="clr-namespace:MSL.controls"
         xmlns:langs="clr-namespace:MSL.langs"
         xmlns:local="clr-namespace:MSL"
-        mc:Ignorable="d" Template="{StaticResource UserControlTemplate1}" 
-        d:Height="450" d:Width="750"
+        mc:Ignorable="d" Template="{StaticResource UserControlTemplate1}"
+        d:Height="600" d:Width="1000"
         Loaded="Window_Loaded">
     <UserControl.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <!-- Mod Card Container Style: clean, no default selection highlight -->
+        <Style x:Key="ModCardContainerStyle" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="SelectionBorder"
+                                BorderBrush="{DynamicResource PrimaryBrush}"
+                                BorderThickness="2,0,0,0"
+                                Margin="0,0,0,6"
+                                Background="Transparent"
+                                CornerRadius="0">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="SelectionBorder" Property="BorderThickness" Value="3,0,0,0"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="SelectionBorder" Property="Background" Value="{DynamicResource SecondaryRegionBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="FilterCheckBoxStyle" TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style x:Key="FilterGroupTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
     </UserControl.Resources>
     <Grid x:Name="BodyGrid">
-        <Button x:Name="CloseBtn" Content="返回" Click="CloseBtn_Click" Margin="10,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="60" />
+        <!-- ========== Loading Indicator ========== -->
+        <TextBlock x:Name="lb01" Text="{Binding [Loading_PlzWait], Source={x:Static langs:LanguageManager.Instance}}"
+                   FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"
+                   Foreground="{DynamicResource DarkPrimaryBrush}"/>
+
+        <!-- ========== Main Mod List View ========== -->
         <Grid x:Name="ModListGrid">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Grid Grid.Row="0" Margin="75,10,10,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <Button Grid.Column="0" x:Name="homeBtn" Content="资源主页" Click="homeBtn_Click"/>
 
-                <Grid Grid.Column="1">
+            <!-- Top Bar: Back + Source Tabs + Search -->
+            <Border Grid.Row="0" Background="{DynamicResource RegionBrush}" Padding="12,8"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Column="0" Content="搜索：" FontSize="14" BorderBrush="{x:Null}" Background="{x:Null}" Margin="10,0,0,0" Padding="0"/>
-                    <TextBox Grid.Column="1" x:Name="SearchTextBox"/>
-                    <Button Grid.Column="2" x:Name="searchMod" Content="搜索" Click="searchMod_Click" Width="60"/>
-                </Grid>
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <Button x:Name="LastPageBtn" Margin="10,0,0,0" Content="上一页" Click="LastPageBtn_Click"/>
-                    <Label Content="第" FontSize="14" BorderBrush="{x:Null}" Background="{x:Null}" Padding="5,0,0,0"/>
-                    <Label x:Name="NowPageLabel" Content="1" FontSize="14" BorderBrush="{x:Null}" Background="{x:Null}" Padding="0"/>
-                    <Label Content="页" FontSize="14" BorderBrush="{x:Null}" Background="{x:Null}" Padding="0,0,5,0"/>
-                    <Button x:Name="NextPageBtn" Content="下一页" Click="NextPageBtn_Click"/>
-                </StackPanel>
 
+                    <Button Grid.Column="0" x:Name="CloseBtn" Content="← 返回" Click="CloseBtn_Click"
+                            Padding="8,4" Margin="0,0,8,0"/>
+
+                    <!-- Source Tabs -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <RadioButton x:Name="SourceModrinthBtn" Content="Modrinth" GroupName="Source"
+                                     IsChecked="True" Checked="SourceBtn_CheckedChanged"
+                                     Style="{StaticResource RadioButtonSameAsButtonDefault}" Padding="12,6" Margin="0,0,4,0"/>
+                        <RadioButton x:Name="SourceCurseForgeBtn" Content="CurseForge" GroupName="Source"
+                                     Checked="SourceBtn_CheckedChanged"
+                                     Style="{StaticResource RadioButtonSameAsButtonDefault}" Padding="12,6"/>
+                    </StackPanel>
+
+                    <!-- Search Box -->
+                    <Grid Grid.Column="2" Margin="0,0,8,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" x:Name="SearchTextBox"
+                                 hc:InfoElement.Placeholder="搜索模组、整合包、插件..."
+                                 FontSize="14" Padding="10,6"
+                                 KeyDown="SearchTextBox_KeyDown"/>
+                        <Button Grid.Column="1" x:Name="searchMod" Content="🔍 搜索"
+                                Click="searchMod_Click" Padding="14,6" Margin="6,0,0,0"/>
+                    </Grid>
+
+                    <!-- Type Tabs -->
+                    <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                        <RadioButton x:Name="TypeModBtn" Content="模组" GroupName="LoadType"
+                                     IsChecked="True" Checked="TypeBtn_CheckedChanged"
+                                     Style="{StaticResource RadioButtonSameAsButtonDefault}" Padding="10,5" Margin="0,0,3,0"/>
+                        <RadioButton x:Name="TypeModpackBtn" Content="整合包" GroupName="LoadType"
+                                     Checked="TypeBtn_CheckedChanged"
+                                     Style="{StaticResource RadioButtonSameAsButtonDefault}" Padding="10,5" Margin="0,0,3,0"/>
+                        <RadioButton x:Name="TypePluginBtn" Content="插件" GroupName="LoadType"
+                                     x:FieldModifier="public" Checked="TypeBtn_CheckedChanged"
+                                     Style="{StaticResource RadioButtonSameAsButtonDefault}" Padding="10,5" Margin="0,0,3,0"/>
+                        <RadioButton x:Name="TypeDatapackBtn" Content="数据包" GroupName="LoadType"
+                                     x:FieldModifier="public" Checked="TypeBtn_CheckedChanged"
+                                     Style="{StaticResource RadioButtonSameAsButtonDefault}" Padding="10,5"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Content: Mod Cards + Filter Sidebar -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="240"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: Mod Card List -->
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <ListBox Grid.Row="0" x:Name="ModList"
+                             MouseDoubleClick="ModList_MouseDoubleClick"
+                             Background="Transparent" BorderThickness="0"
+                             Margin="8,8,4,0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             VirtualizingPanel.IsVirtualizing="True"
+                             VirtualizingPanel.ScrollUnit="Pixel"
+                             ItemContainerStyle="{StaticResource ModCardContainerStyle}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border x:Name="CardBorder"
+                                        Background="{DynamicResource RegionBrush}"
+                                        BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="14"
+                                        Cursor="Hand">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Icon -->
+                                        <Border Grid.Column="0" Width="56" Height="56" CornerRadius="6"
+                                                Margin="0,0,14,0" ClipToBounds="True"
+                                                Background="{DynamicResource BorderBrush}">
+                                            <Image Source="{Binding Icon}" Stretch="UniformToFill"
+                                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                        </Border>
+
+                                        <!-- Info -->
+                                        <Grid Grid.Column="1">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Name + Author -->
+                                            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"
+                                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Author, StringFormat=' by {0}'}" FontSize="12"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           VerticalAlignment="Center" Margin="8,0,0,0"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+
+                                            <!-- Description -->
+                                            <TextBlock Grid.Row="1" Text="{Binding Description}" FontSize="12.5"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"
+                                                       Margin="0,3,0,0" MaxHeight="34"/>
+
+                                            <!-- Category Tags -->
+                                            <ItemsControl Grid.Row="2" ItemsSource="{Binding CategoryTags}" Margin="0,5,0,0">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Background="{DynamicResource SecondaryRegionBrush}"
+                                                                CornerRadius="3" Padding="6,2" Margin="0,0,4,0">
+                                                            <TextBlock Text="{Binding}" FontSize="11"
+                                                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <!-- Stats Row -->
+                                            <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,4,0,0">
+                                                <TextBlock Text="⬇ " FontSize="11" Foreground="{DynamicResource ThirdlyTextBrush}"/>
+                                                <TextBlock Text="{Binding DownloadCountText}" FontSize="11"
+                                                           Foreground="{DynamicResource ThirdlyTextBrush}" Margin="0,0,14,0"/>
+                                                <TextBlock Text="🕐 " FontSize="11" Foreground="{DynamicResource ThirdlyTextBrush}"/>
+                                                <TextBlock Text="{Binding LastUpdatedText}" FontSize="11"
+                                                           Foreground="{DynamicResource ThirdlyTextBrush}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- Pagination -->
+                    <Border Grid.Row="1" Padding="8" Background="{DynamicResource RegionBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Button x:Name="LastPageBtn" Content="← 上一页" Click="LastPageBtn_Click" Padding="12,5" Margin="0,0,6,0"/>
+                            <TextBlock Text="第 " FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            <TextBlock x:Name="NowPageLabel" Text="1" FontSize="13" FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text=" 页" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}"/>
+                            <Button x:Name="NextPageBtn" Content="下一页 →" Click="NextPageBtn_Click" Padding="12,5" Margin="6,0,0,0"/>
+                            <Button x:Name="homeBtn" Content="🏠 推荐" Click="homeBtn_Click" Padding="12,5" Margin="16,0,0,0"
+                                    Visibility="{Binding ElementName=SourceCurseForgeBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Divider -->
+                <Border Grid.Column="1" Width="1" Background="{DynamicResource BorderBrush}"/>
+
+                <!-- Right: Filter Sidebar -->
+                <Border Grid.Column="2" Background="{DynamicResource RegionBrush}" Padding="0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12,10">
+                        <StackPanel>
+                            <!-- MC Version Filter -->
+                            <TextBlock Text="游戏版本" Style="{StaticResource FilterGroupTitle}"/>
+                            <ComboBox x:Name="MinecraftVersionTypeBox" SelectionChanged="Filter_Changed" Margin="0,0,0,12">
+                                <ComboBoxItem Content="全部" IsSelected="True"/>
+                            </ComboBox>
+
+                            <!-- Mod Loader Filter -->
+                            <TextBlock x:Name="LoaderFilterTitle" Text="Mod 加载器" Style="{StaticResource FilterGroupTitle}"/>
+                            <StackPanel x:Name="LoaderFilterPanel" Margin="0,0,0,12">
+                                <CheckBox x:Name="LoaderAll" Content="全部" IsChecked="True"
+                                          Checked="LoaderFilter_Changed" Style="{StaticResource FilterCheckBoxStyle}"/>
+                                <CheckBox x:Name="LoaderForge" Content="Forge"
+                                          Checked="LoaderFilter_Changed" Unchecked="LoaderFilter_Changed"
+                                          Style="{StaticResource FilterCheckBoxStyle}"/>
+                                <CheckBox x:Name="LoaderFabric" Content="Fabric"
+                                          Checked="LoaderFilter_Changed" Unchecked="LoaderFilter_Changed"
+                                          Style="{StaticResource FilterCheckBoxStyle}"/>
+                                <CheckBox x:Name="LoaderNeoForge" Content="NeoForge"
+                                          Checked="LoaderFilter_Changed" Unchecked="LoaderFilter_Changed"
+                                          Style="{StaticResource FilterCheckBoxStyle}"/>
+                                <CheckBox x:Name="LoaderQuilt" Content="Quilt"
+                                          Checked="LoaderFilter_Changed" Unchecked="LoaderFilter_Changed"
+                                          Style="{StaticResource FilterCheckBoxStyle}" Visibility="Collapsed"/>
+                            </StackPanel>
+
+                            <!-- Sort -->
+                            <TextBlock Text="排序方式" Style="{StaticResource FilterGroupTitle}"/>
+                            <ComboBox x:Name="SortCombo" SelectionChanged="Filter_Changed" Margin="0,0,0,12">
+                                <ComboBoxItem Content="相关性" IsSelected="True"/>
+                                <ComboBoxItem Content="下载量"/>
+                                <ComboBoxItem Content="最近更新"/>
+                                <ComboBoxItem Content="名称"/>
+                            </ComboBox>
+
+                            <!-- CurseForge Categories -->
+                            <StackPanel x:Name="CurseForgeCategoryPanel" Visibility="Collapsed">
+                                <TextBlock Text="模组分类 (CurseForge)" Style="{StaticResource FilterGroupTitle}"/>
+                                <ComboBox x:Name="CurseForgeCategoryCombo" SelectionChanged="Filter_Changed" Margin="0,0,0,12">
+                                    <ComboBoxItem Content="全部分类" Tag="0" IsSelected="True"/>
+                                    <ComboBoxItem Content="冒险与RPG" Tag="422"/>
+                                    <ComboBoxItem Content="API与库" Tag="421"/>
+                                    <ComboBoxItem Content="装备与武器" Tag="434"/>
+                                    <ComboBoxItem Content="装饰与 cosmetic" Tag="424"/>
+                                    <ComboBoxItem Content="食物" Tag="436"/>
+                                    <ComboBoxItem Content="魔法" Tag="419"/>
+                                    <ComboBoxItem Content="地图与信息" Tag="423"/>
+                                    <ComboBoxItem Content="杂项" Tag="425"/>
+                                    <ComboBoxItem Content="性能优化" Tag="6814"/>
+                                    <ComboBoxItem Content="红石" Tag="4558"/>
+                                    <ComboBoxItem Content="服务器工具" Tag="435"/>
+                                    <ComboBoxItem Content="存储" Tag="420"/>
+                                    <ComboBoxItem Content="科技" Tag="412"/>
+                                    <ComboBoxItem Content="实用工具" Tag="5191"/>
+                                    <ComboBoxItem Content="世界生成" Tag="406"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- Modrinth Categories -->
+                            <StackPanel x:Name="ModrinthCategoryPanel">
+                                <TextBlock Text="标签 (Modrinth)" Style="{StaticResource FilterGroupTitle}"/>
+                                <ComboBox x:Name="ModrinthCategoryCombo" SelectionChanged="Filter_Changed" Margin="0,0,0,12">
+                                    <ComboBoxItem Content="全部标签" IsSelected="True"/>
+                                    <ComboBoxItem Content="adventure"/>
+                                    <ComboBoxItem Content="cursed"/>
+                                    <ComboBoxItem Content="decoration"/>
+                                    <ComboBoxItem Content="economy"/>
+                                    <ComboBoxItem Content="equipment"/>
+                                    <ComboBoxItem Content="food"/>
+                                    <ComboBoxItem Content="game-mechanics"/>
+                                    <ComboBoxItem Content="library"/>
+                                    <ComboBoxItem Content="magic"/>
+                                    <ComboBoxItem Content="management"/>
+                                    <ComboBoxItem Content="minigame"/>
+                                    <ComboBoxItem Content="mobs"/>
+                                    <ComboBoxItem Content="optimization"/>
+                                    <ComboBoxItem Content="social"/>
+                                    <ComboBoxItem Content="storage"/>
+                                    <ComboBoxItem Content="technology"/>
+                                    <ComboBoxItem Content="transportation"/>
+                                    <ComboBoxItem Content="utility"/>
+                                    <ComboBoxItem Content="worldgen"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- Reset Filters -->
+                            <Button Content="重置筛选" Click="ResetFilters_Click" Margin="0,8,0,0"
+                                    HorizontalAlignment="Stretch" Style="{StaticResource ButtonDefault}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
             </Grid>
-            <StackPanel Grid.Row="1" Margin="10,5,10,0" Orientation="Horizontal">
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="下载源：" FontSize="14" BorderBrush="{x:Null}" Background="{x:Null}" Padding="10,0,10,0"/>
-                    <ComboBox x:Name="LoadSourceBox" SelectionChanged="LoadSourceBox_SelectionChanged">
-                        <ComboBoxItem x:Name="LSB_CurseForge" Content="CurseForge" />
-                        <ComboBoxItem Content="Modrinth" IsSelected="True"/>
-                    </ComboBox>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="资源分类：" FontSize="14" BorderBrush="{x:Null}" Background="{x:Null}" Padding="10,0,10,0"/>
-                    <ComboBox x:Name="LoadTypeBox" SelectionChanged="LoadTypeBox_SelectionChanged">
-                        <ComboBoxItem Content="模组" IsSelected="True"/>
-                        <ComboBoxItem Content="整合包"/>
-                        <ComboBoxItem x:Name="LTB_Plugins" Content="插件"/>
-                        <ComboBoxItem x:Name="LTB_DataPacks" Content="数据包"/>
-                    </ComboBox>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" x:Name="SelMCVerCard">
-                    <Label Content="MC版本：" FontSize="14" BorderBrush="{x:Null}" Background="{x:Null}" Padding="10,0,10,0"/>
-                    <ComboBox x:Name="MinecraftVersionTypeBox" >
-                        <ComboBoxItem Content="全部" IsSelected="True"/>
-                    </ComboBox>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" x:Name="SelMCLoaderCard">
-                    <Label Content="加载器：" FontSize="14" BorderBrush="{x:Null}" Background="{x:Null}" Padding="10,0,10,0"/>
-                    <ComboBox x:Name="MinecraftLoaderTypeBox" >
-                        <ComboBoxItem Content="全部" IsSelected="True"/>
-                        <ComboBoxItem Content="NeoForge"/>
-                        <ComboBoxItem Content="Fabric" />
-                        <ComboBoxItem Content="Forge" />
-                    </ComboBox>
-                </StackPanel>
-            </StackPanel>
-            <ListView Grid.Row="2" x:Name="ModList" FontSize="14" MouseDoubleClick="ModList_MouseDoubleClick" Background="{DynamicResource BorderBackground}" Margin="10">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Width="500" Header="列表（双击查看详情）">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Image Height="24" Width="24" Source="{Binding Icon}"/>
-                                        <TextBlock Margin="10,0,0,0" Text="{Binding Name}" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                    </GridView>
-                </ListView.View>
-            </ListView>
         </Grid>
+
+        <!-- ========== Mod Info / Version List View ========== -->
         <Grid x:Name="ModInfoGrid" Background="{DynamicResource BackgroundBrush}" Visibility="Collapsed">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Grid Margin="10,0,10,0">
-                <WrapPanel>
-                    <Button x:Name="backBtn" Margin="0,10,10,0" Content="返回" Click="backBtn_Click" Width="60"/>
-                    <Image x:Name="ModIconLabel" Margin="0,10,0,0" Height="24" Width="24"/>
-                    <Label x:Name="ModNameLabel" Margin="0,10,10,0" Content="ModName"/>
-                    <hc:Shield x:Name="ModWebsiteUrl" Margin="0,10,10,0" Subject="Website" Status="{Binding [OpenWebsite], Source={x:Static langs:LanguageManager.Instance}}" Command="hc:ControlCommands.OpenLink"/>
-                    <StackPanel x:Name="VerFilterPannel" Margin="0,10,10,0" Orientation="Horizontal">
-                        <Label Content="版本筛选："/>
-                        <ComboBox x:Name="VerFilterCombo" SelectionChanged="VerFilter_SelectionChanged"/>
+
+            <!-- Mod Info Header -->
+            <Border Grid.Row="0" Background="{DynamicResource RegionBrush}" Padding="12"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0" x:Name="backBtn" Content="← 返回" Click="backBtn_Click"
+                            Padding="8,4" VerticalAlignment="Top"/>
+
+                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="40" Height="40" CornerRadius="6" ClipToBounds="True"
+                                    Background="{DynamicResource BorderBrush}" Margin="0,0,10,0">
+                                <Image x:Name="ModIconLabel" Stretch="UniformToFill"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="ModNameLabel" FontSize="18" FontWeight="SemiBold"/>
+                                <hc:Shield x:Name="ModWebsiteUrl" Margin="0,4,0,0"
+                                           Subject="Website" Status="{Binding [OpenWebsite], Source={x:Static langs:LanguageManager.Instance}}"
+                                           Command="hc:ControlCommands.OpenLink"/>
+                            </StackPanel>
+                        </StackPanel>
                     </StackPanel>
-                    <Label x:Name="ModInfoLoadingProcess" Margin="0,10,10,0"/>
-                </WrapPanel>
-            </Grid>
-            <ListView Grid.Row="1" x:Name="ModVerList" MouseDoubleClick="ModVerList_MouseDoubleClick"  Background="{DynamicResource BorderBackground}" Margin="10">
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <StackPanel x:Name="VerFilterPannel" Orientation="Horizontal" Margin="0,0,12,0">
+                            <TextBlock Text="版本筛选：" FontSize="13" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <ComboBox x:Name="VerFilterCombo" SelectionChanged="VerFilter_SelectionChanged" MinWidth="120"/>
+                        </StackPanel>
+                        <TextBlock x:Name="ModInfoLoadingProcess" FontSize="13"
+                                   Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Version List -->
+            <ListView Grid.Row="1" x:Name="ModVerList" MouseDoubleClick="ModVerList_MouseDoubleClick"
+                      Background="Transparent" Margin="8">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem" BasedOn="{StaticResource ListViewItemBaseStyle}">
-                        <Setter Property="Visibility" Value="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <Setter Property="Visibility" Value="{Binding IsVisible, Converter={StaticResource BoolToVis}}"/>
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Width="300" Header="文件列表（双击下载）">
+                        <GridViewColumn Width="350" Header="文件列表（双击下载）">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Vertical">
-                                        <TextBlock Text="{Binding Name}" FontWeight="Bold"/>
-                                        <TextBlock Text="{Binding FileName}" Foreground="Gray"/>
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"/>
+                                        <TextBlock Text="{Binding FileName}" Foreground="{DynamicResource SecondaryTextBrush}"
+                                                   FontSize="12" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn x:Name="MVL_Platform" Width="100" Header="平台" DisplayMemberBinding="{Binding Platform}"/>
-                        <GridViewColumn x:Name="MVL_Dependency" Width="100" Header="依赖" DisplayMemberBinding="{Binding Dependency}"/>
-                        <GridViewColumn Width="150" Header="支持的MC版本" DisplayMemberBinding="{Binding MCVersion}"/>
+                        <GridViewColumn x:Name="MVL_Platform" Width="100" Header="加载器" DisplayMemberBinding="{Binding Platform}"/>
+                        <GridViewColumn x:Name="MVL_Dependency" Width="120" Header="依赖" DisplayMemberBinding="{Binding Dependency}"/>
+                        <GridViewColumn Width="160" Header="支持的MC版本" DisplayMemberBinding="{Binding MCVersion}"/>
                     </GridView>
                 </ListView.View>
             </ListView>
         </Grid>
-        <TextBlock x:Name="lb01" Text="{Binding [Loading_PlzWait], Source={x:Static langs:LanguageManager.Instance}}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource DarkPrimaryBrush}"/>
     </Grid>
 </UserControl>
