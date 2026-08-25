@@ -375,6 +375,16 @@ namespace MSL.pages.serverrunner
             Growl.Success(LanguageManager.Instance["SR_ClearSuccess"]);
         }
 
+        public void DisposeTimerTasks()
+        {
+            foreach (var cts in taskCtsMap.Values)
+            {
+                cts.Cancel();
+                cts.Dispose();
+            }
+            taskCtsMap.Clear();
+        }
+
         // 私有工具方法
         private int GetSelectedTaskId()
             => int.Parse(tasksList.SelectedItem.ToString());

@@ -555,6 +555,8 @@ namespace MSL.utils
 
         public void Dispose()
         {
+            ServerProcess?.Dispose();
+            ServerProcess = null;
             ProblemFound = null;
             // ServerLogHandler.CleanupResources();
             ServerLogHandler.Dispose();
@@ -1034,6 +1036,7 @@ namespace MSL.utils
             {
                 _logProcessTimer.Stop();
             }
+            _logProcessTimer.Tick -= ProcessLogBuffer;
 
             // 处理剩余的日志
             ProcessLogBuffer(null, null);
