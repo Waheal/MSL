@@ -36,7 +36,7 @@
                         </Path.Data>
                     </Path>
                 </Button>
-                <ListBox x:Name="SideMenu" Width="50" SelectionMode="Single" HorizontalAlignment="Stretch" SelectionChanged="SideMenu_SelectionChanged" Background="{x:Null}" BorderThickness="0" Padding="0">
+                <ListBox x:Name="SideMenu" Width="50" SelectionMode="Single" HorizontalAlignment="Stretch" SelectionChanged="SideMenu_SelectionChanged" controls:ListBoxBehaviors.DisableDragSelection="True" Background="{x:Null}" BorderThickness="0" Padding="0">
                     <ListBoxItem Style="{StaticResource ListItemSideMenu}" >
                         <controls:ListBoxSideMenu Icon="pack://application:,,,/images/150px-Grass_Block_JE7_BE6.png" Text="{Binding [MainWindow_Menu_Home], Source={x:Static langs:LanguageManager.Instance}}"/>
                     </ListBoxItem>
