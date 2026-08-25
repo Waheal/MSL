@@ -12,6 +12,7 @@
         Loaded="Window_Loaded">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <controls:ImagePathConverter x:Key="ImagePathConverter"/>
         <!-- Mod Card Container Style: clean, no default selection highlight -->
         <Style x:Key="ModCardContainerStyle" TargetType="ListBoxItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -188,7 +189,7 @@
                                         <Border Grid.Column="0" Width="56" Height="56" CornerRadius="6"
                                                 Margin="0,0,14,0" ClipToBounds="True"
                                                 Background="{DynamicResource BorderBrush}">
-                                            <Image Source="{Binding Icon}" Stretch="UniformToFill"
+                                            <Image Source="{Binding Icon, Converter={StaticResource ImagePathConverter}}" Stretch="UniformToFill"
                                                    RenderOptions.BitmapScalingMode="HighQuality"/>
                                         </Border>
 
