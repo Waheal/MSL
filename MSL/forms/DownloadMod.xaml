@@ -23,16 +23,16 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
                         <Border x:Name="SelectionBorder"
-                                BorderBrush="{DynamicResource PrimaryBrush}"
-                                BorderThickness="2,0,0,0"
+                                BorderBrush="Transparent"
+                                BorderThickness="2"
+                                CornerRadius="8"
                                 Margin="0,0,0,6"
-                                Background="Transparent"
-                                CornerRadius="0">
+                                Background="Transparent">
                             <ContentPresenter/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="SelectionBorder" Property="BorderThickness" Value="3,0,0,0"/>
+                                <Setter TargetName="SelectionBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="SelectionBorder" Property="Background" Value="{DynamicResource SecondaryRegionBrush}"/>
@@ -51,13 +51,39 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Margin" Value="0,0,0,6"/>
         </Style>
+        <!-- Version List Container Style -->
+        <Style x:Key="VerListContainerStyle" TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Visibility" Value="{Binding IsVisible, Converter={StaticResource BoolToVis}}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="ItemBorder"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                BorderThickness="2"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SecondaryRegionBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource RegionBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
     <Grid x:Name="BodyGrid">
-        <!-- ========== Loading Indicator ========== -->
-        <TextBlock x:Name="lb01" Text="{Binding [Loading_PlzWait], Source={x:Static langs:LanguageManager.Instance}}"
-                   FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"
-                   Foreground="{DynamicResource DarkPrimaryBrush}"/>
-
         <!-- ========== Main Mod List View ========== -->
         <Grid x:Name="ModListGrid">
             <Grid.RowDefinitions>
@@ -135,11 +161,10 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-
                     <ListBox Grid.Row="0" x:Name="ModList"
                              MouseDoubleClick="ModList_MouseDoubleClick"
-                             Background="Transparent" BorderThickness="0"
-                             Margin="8,8,4,0"
+                             BorderThickness="0"
+                             Margin="3"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              VirtualizingPanel.IsVirtualizing="True"
                              VirtualizingPanel.ScrollUnit="Pixel"
@@ -346,6 +371,7 @@
         <Grid x:Name="ModInfoGrid" Background="{DynamicResource BackgroundBrush}" Visibility="Collapsed">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -360,7 +386,7 @@
                     </Grid.ColumnDefinitions>
 
                     <Button Grid.Column="0" x:Name="backBtn" Content="← 返回" Click="backBtn_Click"
-                            Padding="8,4" VerticalAlignment="Top"/>
+                            Padding="8,4" VerticalAlignment="Center"/>
 
                     <StackPanel Grid.Column="1" Margin="12,0,0,0">
                         <StackPanel Orientation="Horizontal">
@@ -388,33 +414,62 @@
                 </Grid>
             </Border>
 
+            <!-- Version List Header -->
+            <Border Grid.Row="1" Background="{DynamicResource RegionBrush}" Padding="12,6"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="350"/>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="160"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="文件列表（双击下载）" FontWeight="SemiBold" FontSize="13"
+                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                    <TextBlock Grid.Column="1" Text="加载器" FontWeight="SemiBold" FontSize="13"
+                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                    <TextBlock Grid.Column="2" Text="依赖" FontWeight="SemiBold" FontSize="13"
+                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                    <TextBlock Grid.Column="3" Text="支持的MC版本" FontWeight="SemiBold" FontSize="13"
+                               Foreground="{DynamicResource SecondaryTextBrush}"/>
+                </Grid>
+            </Border>
+
             <!-- Version List -->
-            <ListView Grid.Row="1" x:Name="ModVerList" MouseDoubleClick="ModVerList_MouseDoubleClick"
-                      Background="Transparent" Margin="8">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem" BasedOn="{StaticResource ListViewItemBaseStyle}">
-                        <Setter Property="Visibility" Value="{Binding IsVisible, Converter={StaticResource BoolToVis}}"/>
-                    </Style>
-                </ListView.ItemContainerStyle>
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Width="350" Header="文件列表（双击下载）">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Vertical">
-                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"/>
-                                        <TextBlock Text="{Binding FileName}" Foreground="{DynamicResource SecondaryTextBrush}"
-                                                   FontSize="12" Margin="0,2,0,0"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                        <GridViewColumn x:Name="MVL_Platform" Width="100" Header="加载器" DisplayMemberBinding="{Binding Platform}"/>
-                        <GridViewColumn x:Name="MVL_Dependency" Width="120" Header="依赖" DisplayMemberBinding="{Binding Dependency}"/>
-                        <GridViewColumn Width="160" Header="支持的MC版本" DisplayMemberBinding="{Binding MCVersion}"/>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+            <ListBox Grid.Row="2" x:Name="ModVerList" MouseDoubleClick="ModVerList_MouseDoubleClick"
+                     Background="Transparent" BorderThickness="0" Margin="0"
+                     VirtualizingPanel.IsVirtualizing="True"
+                     VirtualizingPanel.ScrollUnit="Pixel"
+                     ItemContainerStyle="{StaticResource VerListContainerStyle}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="350"/>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="160"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"
+                                           TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding FileName}" Foreground="{DynamicResource SecondaryTextBrush}"
+                                           FontSize="12" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text="{Binding Platform}" FontSize="12.5"
+                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Dependency}" FontSize="12.5"
+                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Grid.Column="3" Text="{Binding MCVersion}" FontSize="12.5"
+                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
         </Grid>
+        <!-- ========== Loading Indicator ========== -->
+        <TextBlock x:Name="lb01" Text="{Binding [Loading_PlzWait], Source={x:Static langs:LanguageManager.Instance}}"
+           FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="-230,0,0,0"
+           Foreground="{DynamicResource DarkPrimaryBrush}"/>
     </Grid>
 </UserControl>

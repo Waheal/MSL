@@ -125,13 +125,13 @@
                                 <!-- 普通按钮样式 -->
                                 <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                                     <Setter Property="FontSize" Value="14"/>
-                                    <Setter Property="Height" Value="64"/>
+                                    <Setter Property="Height" Value="54"/>
                                 </Style>
 
                                 <!-- Primary按钮样式 -->
                                 <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ButtonPrimary}">
                                     <Setter Property="FontSize" Value="14"/>
-                                    <Setter Property="Height" Value="64"/>
+                                    <Setter Property="Height" Value="54"/>
                                 </Style>
 
                                 <Style TargetType="TextBlock">
@@ -148,7 +148,7 @@
                                     </hc:UniformSpacingPanel>
                                 </Button.Content>
                             </Button>
-                            <Button x:Name="addPluginBtn" Style="{StaticResource PrimaryButtonStyle}" Click="addPlugin_Click">
+                            <Button x:Name="addPluginBtn" Click="addPlugin_Click">
                                 <Button.Content>
                                     <hc:UniformSpacingPanel Orientation="Horizontal" Spacing="5">
                                         <iconPacks:PackIconMaterial Kind="Plus"/>
@@ -305,13 +305,13 @@
                                 <!-- 普通按钮样式 -->
                                 <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                                     <Setter Property="FontSize" Value="14"/>
-                                    <Setter Property="Height" Value="50"/>
+                                    <Setter Property="Height" Value="48"/>
                                 </Style>
 
                                 <!-- Primary按钮样式 -->
                                 <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ButtonPrimary}">
                                     <Setter Property="FontSize" Value="14"/>
-                                    <Setter Property="Height" Value="50"/>
+                                    <Setter Property="Height" Value="48"/>
                                 </Style>
 
                                 <Style TargetType="TextBlock">
@@ -336,7 +336,7 @@
                                     </hc:UniformSpacingPanel>
                                 </Button.Content>
                             </Button>
-                            <Button Style="{StaticResource PrimaryButtonStyle}" Click="detectClientMods_Click">
+                            <Button Click="detectClientMods_Click">
                                 <Button.Content>
                                     <hc:UniformSpacingPanel Orientation="Horizontal" Spacing="5">
                                         <iconPacks:PackIconMaterial Kind="MagnifyScan"/>
@@ -344,7 +344,7 @@
                                     </hc:UniformSpacingPanel>
                                 </Button.Content>
                             </Button>
-                            <Button x:Name="addModBtn" Style="{StaticResource PrimaryButtonStyle}" Click="addMod_Click">
+                            <Button x:Name="addModBtn" Click="addMod_Click">
                                 <Button.Content>
                                     <hc:UniformSpacingPanel Orientation="Horizontal" Spacing="5">
                                         <iconPacks:PackIconMaterial Kind="Plus"/>

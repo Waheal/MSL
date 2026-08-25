@@ -786,14 +786,11 @@ namespace MSL
                 if (LoadSource == 0)
                 {
                     VerFilterPannel.Visibility = Visibility.Collapsed;
-                    MVL_Dependency.Width = 100;
                     await ModInfo_CurseForge(info);
                 }
                 else
                 {
                     VerFilterPannel.Visibility = Visibility.Visible;
-                    MVL_Platform.Width = 100;
-                    MVL_Dependency.Width = 0;
                     await ModInfo_Modrinth(info, MinecraftVersionTypeBox.SelectedIndex == 0 ? "0" : MinecraftVersionTypeBox.Text);
                 }
                 ModInfoLoadingProcess.Visibility = Visibility.Collapsed;
