@@ -203,8 +203,10 @@
                             <MultiDataTrigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <ColorAnimation Storyboard.TargetName="Rect" Storyboard.TargetProperty="Fill.Color" To="Gray" Duration="0:0:0.2"/>
-                                        <ColorAnimation Storyboard.TargetName="Border" Storyboard.TargetProperty="Background.Color" To="Gray" Duration="0:0:0.0"/>
+                                        <!-- hover 底色取自主题的 SideMenuItemBrush（浅色模式更浅、深色模式维持原样）。
+                                             这里只动画透明度：ColorAnimation.To 不支持 DynamicResource，
+                                             写死颜色会让两个主题共用同一个值。
+                                             Rect 的基础透明度为 0，原先那条 Fill.Color 动画看不见，已去掉。 -->
                                         <DoubleAnimation Storyboard.TargetName="Border" Storyboard.TargetProperty="(Border.Background).Opacity" Duration="0:0:0.1" To="0.5"/>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -212,8 +214,6 @@
                             <MultiDataTrigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <ColorAnimation Storyboard.TargetName="Rect" Storyboard.TargetProperty="Fill.Color" Duration="0:0:0.5"/>
-                                        <ColorAnimation Storyboard.TargetName="Border" Storyboard.TargetProperty="Background.Color" Duration="0:0:0.5"/>
                                         <DoubleAnimation Storyboard.TargetName="Border" Storyboard.TargetProperty="(Border.Background).Opacity" Duration="0:0:0.5"/>
                                     </Storyboard>
                                 </BeginStoryboard>
