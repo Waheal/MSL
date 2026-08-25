@@ -9,7 +9,7 @@ namespace MSL.utils.Config
 {
     public class AppConfig
     {
-        public static readonly string ConfigPath = @"MSL\config.json";
+        public static readonly string ConfigPath = ConfigPaths.Resolve(@"MSL\config.json");
 
         private static AppConfig _current;
         public static AppConfig Current => _current ??= Load();

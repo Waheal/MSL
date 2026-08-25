@@ -514,7 +514,7 @@ namespace MSL.pages
             else
             {
                 int i = 0;
-                JObject jsonObject = JObject.Parse(File.ReadAllText(@"MSL\ServerList.json", Encoding.UTF8));
+                JObject jsonObject = JObject.Parse(File.ReadAllText(ServerConfig.ConfigPath, Encoding.UTF8));
                 foreach (var item in jsonObject)
                 {
                     if (i == startServerDropdown.SelectedIndex)

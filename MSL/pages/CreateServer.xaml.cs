@@ -218,7 +218,8 @@ namespace MSL.pages
                         }
                         OpenFileDialog openfile = new OpenFileDialog
                         {
-                            InitialDirectory = "MSL",
+                            InitialDirectory = AppDomain.CurrentDomain.BaseDirectory,
+                            RestoreDirectory = true,
                             Title = Lang.Page_CreateServer_SelectPackFile,
                             Filter = Lang.Page_CreateServer_ZipFileFilter
                         };
@@ -387,6 +388,7 @@ namespace MSL.pages
         {
             OpenFileDialog openfile = new OpenFileDialog();
             openfile.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            openfile.RestoreDirectory = true;
             openfile.Title = Lang.Page_CreateServer_SelectFileTitle;
             openfile.Filter = Lang.SR_JarFileFilter;
             var res = openfile.ShowDialog();
@@ -411,6 +413,7 @@ namespace MSL.pages
         {
             OpenFileDialog openfile = new OpenFileDialog();
             openfile.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            openfile.RestoreDirectory = true;
             openfile.Title = Lang.SR_SelectJavaExe;
             openfile.Filter = Lang.SR_ExeFileFilter;
             var res = openfile.ShowDialog();

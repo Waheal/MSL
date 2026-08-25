@@ -361,3 +361,16 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# MSL 运行时生成的配置/数据（不应提交）
+MSL/config.json
+MSL/config.json.tmp
+MSL/config.json.bak
+MSL/ServerList.json
+MSL/ServerList.json.tmp
+MSL/ServerList.json.bak
+MSL/frp/
+MSL/Downloads/
+MSL/Server*/
+MSL/Background.png
+MSL/Background_.png
+MSL/Java/

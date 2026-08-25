@@ -693,7 +693,7 @@ namespace MSL.controls
         //获取json对象
         private JObject GetJsonObj(string file)
         {
-            string jsonPath = Path.Combine(Directory.GetCurrentDirectory(), file);
+            string jsonPath = MSL.utils.Config.ConfigPaths.Resolve(file);
             var json = File.ReadAllText(jsonPath);
             var jsonObj = JObject.Parse(json);
             return jsonObj;

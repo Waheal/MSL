@@ -84,13 +84,14 @@ namespace MSL.utils.Config
         {
             try
             {
-                Directory.CreateDirectory("MSL\\frp");
+                string frpDir = ConfigPaths.FrpDir;
+                Directory.CreateDirectory(frpDir);
                 int number = Functions.Frpc_GenerateRandomInt();
-                string frpConfigPath = @"MSL\frp\config.json";
+                string frpConfigPath = ConfigPaths.FrpConfig;
                 if (!File.Exists(frpConfigPath))
                     File.WriteAllText(frpConfigPath, "{\n}");
-                Directory.CreateDirectory($"MSL\\frp\\{number}");
-                File.WriteAllText($"MSL\\frp\\{number}\\frpc{suffix}", content);
+                Directory.CreateDirectory(ConfigPaths.Frp(number.ToString()));
+                File.WriteAllText(ConfigPaths.Frp(number.ToString(), $"frpc{suffix}"), content);
                 JObject entry = new JObject
                 {
                     ["frpcServer"] = serverID,
