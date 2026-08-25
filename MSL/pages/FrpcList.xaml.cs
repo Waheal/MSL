@@ -1,6 +1,7 @@
 ﻿using MSL.langs;
 using MSL.pages.frpProviders.MSLFrp;
 using MSL.utils;
+using MSL.utils.Config;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -50,20 +51,20 @@ namespace MSL.pages
                 FrpcListBox.ItemsSource = frplist;
             });
 
-            if (!File.Exists(Path.Combine("MSL", "frp", "config.json")))
+            if (!File.Exists(ConfigPaths.FrpConfig))
             {
                 return;
             }
-            JObject keyValuePairs = JObject.Parse(File.ReadAllText(Path.Combine("MSL", "frp", "config.json")));
+            JObject keyValuePairs = JObject.Parse(File.ReadAllText(ConfigPaths.FrpConfig));
             if (keyValuePairs.ContainsKey("MSLFrpAccount"))
             {
                 keyValuePairs.Remove("MSLFrpAccount");
-                File.WriteAllText(Path.Combine("MSL", "frp", "config.json"), Convert.ToString(keyValuePairs));
+                File.WriteAllText(ConfigPaths.FrpConfig, Convert.ToString(keyValuePairs));
             }
             if (keyValuePairs.ContainsKey("MSLFrpPasswd"))
             {
                 keyValuePairs.Remove("MSLFrpPasswd");
-                File.WriteAllText(Path.Combine("MSL", "frp", "config.json"), Convert.ToString(keyValuePairs));
+                File.WriteAllText(ConfigPaths.FrpConfig, Convert.ToString(keyValuePairs));
             }
             foreach (var keyValue in keyValuePairs)
             {
@@ -148,10 +149,10 @@ namespace MSL.pages
                     MagicShow.ShowMsgDialog(Window.GetWindow(this), Lang.Page_FrpcList_MappingRunning, Lang.Tip);
                     return;
                 }
-                JObject keyValuePairs = JObject.Parse(File.ReadAllText(Path.Combine("MSL", "frp", "config.json")));
+                JObject keyValuePairs = JObject.Parse(File.ReadAllText(ConfigPaths.FrpConfig));
                 keyValuePairs.Remove(selectedTunnel.ID);
-                File.WriteAllText(Path.Combine("MSL", "frp", "config.json"), Convert.ToString(keyValuePairs));
-                Directory.Delete(Path.Combine("MSL", "frp", selectedTunnel.ID), true);
+                File.WriteAllText(ConfigPaths.FrpConfig, Convert.ToString(keyValuePairs));
+                Directory.Delete(ConfigPaths.Frp(selectedTunnel.ID), true);
                 GetFrpcConfig();
             }
 

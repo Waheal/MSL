@@ -203,8 +203,10 @@
                             <MultiDataTrigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <ColorAnimation Storyboard.TargetName="Rect" Storyboard.TargetProperty="Fill.Color" To="Gray" Duration="0:0:0.2"/>
-                                        <ColorAnimation Storyboard.TargetName="Border" Storyboard.TargetProperty="Background.Color" To="Gray" Duration="0:0:0.0"/>
+                                        <!-- hover 底色取自主题的 SideMenuItemBrush（浅色模式更浅、深色模式维持原样）。
+                                             这里只动画透明度：ColorAnimation.To 不支持 DynamicResource，
+                                             写死颜色会让两个主题共用同一个值。
+                                             Rect 的基础透明度为 0，原先那条 Fill.Color 动画看不见，已去掉。 -->
                                         <DoubleAnimation Storyboard.TargetName="Border" Storyboard.TargetProperty="(Border.Background).Opacity" Duration="0:0:0.1" To="0.5"/>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -212,8 +214,6 @@
                             <MultiDataTrigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <ColorAnimation Storyboard.TargetName="Rect" Storyboard.TargetProperty="Fill.Color" Duration="0:0:0.5"/>
-                                        <ColorAnimation Storyboard.TargetName="Border" Storyboard.TargetProperty="Background.Color" Duration="0:0:0.5"/>
                                         <DoubleAnimation Storyboard.TargetName="Border" Storyboard.TargetProperty="(Border.Background).Opacity" Duration="0:0:0.5"/>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -223,61 +223,84 @@
                             <Setter TargetName="Rect" Property="Fill" Value="{DynamicResource DarkPrimaryBrush}"/>
                             <Setter TargetName="Border" Property="Background" Value="{DynamicResource BorderBackground}"/>
                         </Trigger>
-                        <!-- WinUI3 风格按压反馈：按下时图标区域轻微缩小“下陷”，松开/移出时弹回 -->
-                        <EventTrigger RoutedEvent="Mouse.MouseDown">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleX" To="0.92" Duration="0:0:0.08">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CircleEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                    <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleY" To="0.92" Duration="0:0:0.08">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CircleEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                        <EventTrigger RoutedEvent="Mouse.MouseUp">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.15">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CircleEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                    <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.15">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CircleEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
-                        <EventTrigger RoutedEvent="Mouse.MouseLeave">
-                            <BeginStoryboard>
-                                <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.15">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CircleEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                    <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.15">
-                                        <DoubleAnimation.EasingFunction>
-                                            <CircleEase EasingMode="EaseOut"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </EventTrigger>
+                        <!-- WinUI3 风格按压反馈（按下轻微下陷、松开弹回）由 ListBoxBehaviors 在代码里
+                             直接对下面 Border 的 ScaleTransform 做动画。不在这里用 EventTrigger/DataTrigger：
+                             DisableDragSelection 会把 PreviewMouseLeftButtonDown 标为 Handled，
+                             冒泡的 Mouse.MouseDown/MouseUp 不再发出；且触发器的绑定路径与
+                             Storyboard.TargetName 都是运行时按字符串解析，解析失败时静默无动画。 -->
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
     
+    <!-- 侧边栏 ListBox 本体样式：把收起/展开按钮做进模板，配合 ListBoxBehaviors.SideMenuExpanded
+         驱动宽度和配置持久化。MainWindow 和 ServerRunner 直接套用这一个样式即可，
+         不必各自摆一个按钮再写一遍 Click 逻辑。
+         键名带 Style 后缀，避免和控件类 controls:ListBoxSideMenu 混淆。 -->
+    <Style x:Key="ListBoxSideMenuStyle" TargetType="{x:Type ListBox}">
+        <Setter Property="Background" Value="{x:Null}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="SelectionMode" Value="Single"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="ItemContainerStyle" Value="{StaticResource ListItemSideMenu}"/>
+        <Setter Property="local:ListBoxBehaviors.DisableDragSelection" Value="True"/>
+        <Setter Property="local:ListBoxBehaviors.PersistExpandedState" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBox}">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <!-- 收起/展开按钮。用自己的模板而不是 ToggleButton.NoCheckedBorder：
+                                 那个样式带圆角和 Padding，而且 hover 变色写在 Style.Triggers 里，
+                                 会被本地的 Background="Transparent" 盖掉，根本看不到悬停反馈。
+                                 Focusable=False：不抢侧栏的键盘导航焦点。 -->
+                            <ToggleButton x:Name="ExpandToggle" Grid.Row="0" Height="38" Width="42"
+                                          HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4,4,4,2"
+                                          IsChecked="{Binding Path=(local:ListBoxBehaviors.SideMenuExpanded), RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                        <Border x:Name="ToggleBorder" CornerRadius="7" Background="Transparent">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <!-- 不用 SideMenuItemBrush：它的 Opacity 是 0（item 模板靠动画把它提到 0.5），
+                                                 当成静态底色直接给会完全看不见。 -->
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ToggleBorder" Property="Background" Value="{DynamicResource SecondaryRegionBrush}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="ToggleBorder" Property="Background" Value="{DynamicResource BorderBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                                <Path Stroke="{DynamicResource PrimaryTextBrush}">
+                                    <Path.Data>
+                                        <GeometryGroup>
+                                            <PathGeometry Figures="M 0 0 h 15"/>
+                                            <PathGeometry Figures="M 0 5 h 15"/>
+                                            <PathGeometry Figures="M 0 10 h 15"/>
+                                        </GeometryGroup>
+                                    </Path.Data>
+                                </Path>
+                            </ToggleButton>
+                            <ScrollViewer Grid.Row="1" Focusable="False" Padding="{TemplateBinding Padding}"
+                                          HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden">
+                                <ItemsPresenter/>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="TabItemSideMenu" TargetType="{x:Type TabItem}">
         <Setter Property="HeaderTemplate">
             <Setter.Value>

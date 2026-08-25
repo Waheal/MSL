@@ -452,6 +452,7 @@ namespace MSL.controls.ctrls_serverrunner
                 OpenFileDialog openfile = new OpenFileDialog
                 {
                     InitialDirectory = AppDomain.CurrentDomain.BaseDirectory,
+                    RestoreDirectory = true,
                     Title = "请选择文件",
                     Filter = "PNG图像|*.png"
                 };

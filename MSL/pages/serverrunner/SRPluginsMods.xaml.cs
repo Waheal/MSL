@@ -246,6 +246,7 @@ namespace MSL.pages.serverrunner
             var dialog = new OpenFileDialog
             {
                 InitialDirectory = AppDomain.CurrentDomain.BaseDirectory,
+                RestoreDirectory = true,
                 Multiselect = true,
                 Title = LanguageManager.Instance["SR_SelectFile"],
                 Filter = LanguageManager.Instance["SR_JarFileFilter"]

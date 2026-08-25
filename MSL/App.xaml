@@ -20,7 +20,9 @@
                             <SolidColorBrush x:Key="BorderFullBackground" Color="White"/>
                             <SolidColorBrush x:Key="ContentRegionBrush" Color="#FFF7FAFC" Opacity="0.7" />
                             <SolidColorBrush x:Key="SideMenuBrush" Color="#FFEEF4F9" Opacity="0.7" />
-                            <SolidColorBrush x:Key="SideMenuItemBrush" Opacity="0" />
+                            <!-- 侧边栏项底色：基础透明度 0（平时不可见），hover 时模板只动画透明度。
+                                 浅色模式用比原来 Gray 更浅的灰，避免压浅色背景。 -->
+                            <SolidColorBrush x:Key="SideMenuItemBrush" Color="#C8C8C8" Opacity="0" />
                         </ResourceDictionary>
 
                         <ResourceDictionary x:Key="Dark" hc:ThemeDictionary.Key="Dark">
@@ -28,7 +30,8 @@
                             <SolidColorBrush x:Key="BorderFullBackground" Color="#232323"/>
                             <SolidColorBrush x:Key="ContentRegionBrush" Color="#141414" Opacity="0.7" />
                             <SolidColorBrush x:Key="SideMenuBrush" Color="#1D1E1F" Opacity="0.7" />
-                            <SolidColorBrush x:Key="SideMenuItemBrush" Opacity="0" />
+                            <!-- 深色模式保持原来 Gray 的观感 -->
+                            <SolidColorBrush x:Key="SideMenuItemBrush" Color="#808080" Opacity="0" />
                         </ResourceDictionary>
                     </hc:ThemeResources.ThemeDictionaries>
                 </hc:ThemeResources>

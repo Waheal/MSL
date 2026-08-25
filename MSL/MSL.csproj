@@ -148,6 +148,7 @@
       <DependentUpon>SakuraFrp.xaml</DependentUpon>
     </Compile>
     <Compile Include="utils\Config\AppConfig.cs" />
+    <Compile Include="utils\Config\ConfigPaths.cs" />
     <Compile Include="utils\Config\Config.cs" />
     <Compile Include="utils\Config\ConfigStore.cs" />
     <Compile Include="utils\Config\ConfigWriter.cs" />

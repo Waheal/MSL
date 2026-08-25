@@ -75,13 +75,13 @@ namespace MSL.pages
             try
             {
                 LogHelper.Write.Info("正在读取并解析 MSL\\frp\\config.json 文件。");
-                JObject jobject = JObject.Parse(File.ReadAllText(@"MSL\frp\config.json", Encoding.UTF8));
+                JObject jobject = JObject.Parse(File.ReadAllText(ConfigPaths.FrpConfig, Encoding.UTF8));
                 if (jobject[FrpID.ToString()]["frpcServer"] == null) // 如果frpcServer为null就给他设置为0！
                 {
                     LogHelper.Write.Warn($"Frpc (FrpID: {FrpID}) 的 frpcServer 配置项为 null，已自动设置为 0 并保存回配置文件。");
                     jobject[FrpID.ToString()]["frpcServer"] = 0;
                     string convertString = Convert.ToString(jobject);
-                    File.WriteAllText(@"MSL\frp\config.json", convertString, Encoding.UTF8);
+                    File.WriteAllText(ConfigPaths.FrpConfig, convertString, Encoding.UTF8);
                 }
                 //copyFrpc.IsEnabled = true;
                 frplab1.Text = LanguageManager.Instance["Page_FrpcPage_Status_Checking"];
@@ -325,13 +325,13 @@ namespace MSL.pages
             LogHelper.Write.Info($"开始启动 Frpc (FrpID: {FrpID}) 流程。");
             try
             {
-                Directory.CreateDirectory("MSL\\frp");
+                Directory.CreateDirectory(ConfigPaths.FrpDir);
                 MagicFlowMsg.ShowMessage(Lang.Page_FrpcPage_StartingMapping, 4);
                 //Growl.Info("正在启动内网映射！");
                 startfrpcBtn.IsEnabled = false;
                 frpcOutlog.Text = Lang.Page_FrpcPage_Starting;
                 // 读取配置
-                JObject jobject = JObject.Parse(File.ReadAllText(@"MSL\frp\config.json", Encoding.UTF8));
+                JObject jobject = JObject.Parse(File.ReadAllText(ConfigPaths.FrpConfig, Encoding.UTF8));
                 // 默认的玩意
                 int frpcServer = (int)jobject[FrpID.ToString()]["frpcServer"];
                 string frpcversion = Config.Read("FrpcVersion")?.ToString() ?? "";
@@ -773,7 +773,7 @@ namespace MSL.pages
             if (msg.Contains("发现新版本"))
             {
                 LogHelper.Write.Warn($"Frpc (FrpID: {FrpID}) 检测到新版本: {msg}");
-                JObject jobject = JObject.Parse(File.ReadAllText(@"MSL\frp\config.json", Encoding.UTF8));
+                JObject jobject = JObject.Parse(File.ReadAllText(ConfigPaths.FrpConfig, Encoding.UTF8));
                 if ((int)jobject[FrpID.ToString()]["frpcServer"] == 1) // OF frpc更新
                 {
                     int _ret = 0;

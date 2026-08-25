@@ -25,34 +25,23 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <StackPanel x:Name="SideMenuPanel" Background="{DynamicResource SideMenuBrush}">
-                <Button x:Name="SideMenuContextOpen" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="42" BorderThickness="0" Background="Transparent" Click="SideMenuContextOpen_Click">
-                    <Path Stroke="{DynamicResource PrimaryTextBrush}">
-                        <Path.Data>
-                            <GeometryGroup>
-                                <PathGeometry Figures="M 0 0 h 15"/>
-                                <PathGeometry Figures="M 0 5 h 15"/>
-                                <PathGeometry Figures="M 0 10 h 15"/>
-                            </GeometryGroup>
-                        </Path.Data>
-                    </Path>
-                </Button>
-                <ListBox x:Name="SideMenu" Width="50" SelectionMode="Single" HorizontalAlignment="Stretch" SelectionChanged="SideMenu_SelectionChanged" controls:ListBoxBehaviors.DisableDragSelection="True" Background="{x:Null}" BorderThickness="0" Padding="0">
-                    <ListBoxItem Style="{StaticResource ListItemSideMenu}" >
+                <ListBox x:Name="SideMenu" Style="{StaticResource ListBoxSideMenuStyle}" SelectionChanged="SideMenu_SelectionChanged">
+                    <ListBoxItem>
                         <controls:ListBoxSideMenu Icon="pack://application:,,,/images/150px-Grass_Block_JE7_BE6.png" Text="{Binding [MainWindow_Menu_Home], Source={x:Static langs:LanguageManager.Instance}}"/>
                     </ListBoxItem>
-                    <ListBoxItem Style="{StaticResource ListItemSideMenu}" >
+                    <ListBoxItem>
                         <controls:ListBoxSideMenu Icon="pack://application:,,,/images/150px-Enchanted_Book.png" Text="{Binding [MainWindow_Menu_ServerList], Source={x:Static langs:LanguageManager.Instance}}"/>
                     </ListBoxItem>
-                    <ListBoxItem Style="{StaticResource ListItemSideMenu}" >
+                    <ListBoxItem>
                         <controls:ListBoxSideMenu Icon="pack://application:,,,/images/150px-Beacon.png" Text="{Binding [MainWindow_Menu_Frpc], Source={x:Static langs:LanguageManager.Instance}}"/>
                     </ListBoxItem>
-                    <ListBoxItem Style="{StaticResource ListItemSideMenu}" >
+                    <ListBoxItem>
                         <controls:ListBoxSideMenu Icon="pack://application:,,,/images/150px-Impulse_Command_Block.png" Text="{Binding [MainWindow_Menu_OnlinePlay], Source={x:Static langs:LanguageManager.Instance}}"/>
                     </ListBoxItem>
-                    <ListBoxItem Style="{StaticResource ListItemSideMenu}" >
+                    <ListBoxItem>
                         <controls:ListBoxSideMenu Icon="pack://application:,,,/images/150px-Wooden_Pickaxe_JE3_BE3.png" Text="{Binding [MainWindow_Menu_Setting], Source={x:Static langs:LanguageManager.Instance}}"/>
                     </ListBoxItem>
-                    <ListBoxItem Style="{StaticResource ListItemSideMenu}" >
+                    <ListBoxItem>
                         <controls:ListBoxSideMenu Icon="pack://application:,,,/images/150px-Diamond_Revision_2.png" Text="{Binding [MainWindow_Menu_About], Source={x:Static langs:LanguageManager.Instance}}"/>
                     </ListBoxItem>
                 </ListBox>

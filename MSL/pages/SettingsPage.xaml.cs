@@ -126,7 +126,7 @@ namespace MSL.pages
             AutoStartServers.Items.Clear();
             try
             {
-                if (!File.Exists(@"MSL\ServerList.json")) return;
+                if (!File.Exists(ServerConfig.ConfigPath)) return;
                 var autoStartIds = _autoStartList.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToHashSet();
                 foreach (var item in ServerConfig.Current.All)
                 {
@@ -392,6 +392,7 @@ namespace MSL.pages
             var openfile = new OpenFileDialog
             {
                 InitialDirectory = AppDomain.CurrentDomain.BaseDirectory,
+                RestoreDirectory = true,
                 Title = LanguageManager.Instance["SettingsPage_SelectFile"],
                 Filter = LanguageManager.Instance["SettingsPage_AllFiles"]
             };

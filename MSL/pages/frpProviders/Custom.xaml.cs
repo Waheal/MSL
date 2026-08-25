@@ -1,5 +1,6 @@
 ﻿using MSL.langs;
 using MSL.utils;
+using MSL.utils.Config;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
@@ -28,7 +29,7 @@ namespace MSL.pages.frpProviders
             LogHelper.Write.Info("开始处理自定义Frp配置创建。");
             try
             {
-                Directory.CreateDirectory("MSL\\frp");
+                Directory.CreateDirectory(ConfigPaths.FrpDir);
                 int number = Functions.Frpc_GenerateRandomInt();
                 LogHelper.Write.Info($"为新隧道生成了随机ID: {number}。");
 
@@ -62,8 +63,8 @@ namespace MSL.pages.frpProviders
                             $"{moreData.Text}\n";
 
                         LogHelper.Write.Info($"隧道 {number} 的frpc.toml内容已生成，准备写入文件。");
-                        Directory.CreateDirectory("MSL\\frp\\" + number);
-                        File.WriteAllText($"MSL\\frp\\{number}\\frpc.toml", FrpcConfig);
+                        Directory.CreateDirectory(ConfigPaths.Frp(number.ToString()));
+                        File.WriteAllText(ConfigPaths.Frp(number.ToString(), "frpc.toml"), FrpcConfig);
                         LogHelper.Write.Info($"配置文件 frpc.toml 已成功写入到 MSL\\frp\\{number} 目录。");
                         SetFrpcPath(number);
                     }
@@ -72,8 +73,8 @@ namespace MSL.pages.frpProviders
                 {
                     LogHelper.Write.Info("当前为直接配置文件(CustomMode)模式。");
                     //直接丢配置文件模式
-                    Directory.CreateDirectory("MSL\\frp\\" + number);
-                    File.WriteAllText($"MSL\\frp\\{number}\\frpc.toml", ConfigBox.Text);
+                    Directory.CreateDirectory(ConfigPaths.Frp(number.ToString()));
+                    File.WriteAllText(ConfigPaths.Frp(number.ToString(), "frpc.toml"), ConfigBox.Text);
                     LogHelper.Write.Info($"用户提供的直接配置文件 frpc.toml 已成功写入到 MSL\\frp\\{number} 目录。");
                     SetFrpcPath(number);
                 }
@@ -97,14 +98,14 @@ namespace MSL.pages.frpProviders
 
             try
             {
-                Directory.CreateDirectory(@"MSL\frp");
-                if (!File.Exists(@"MSL\frp\config.json"))
+                Directory.CreateDirectory(ConfigPaths.FrpDir);
+                if (!File.Exists(ConfigPaths.FrpConfig))
                 {
                     LogHelper.Write.Warn("未检测到 MSL\\frp\\config.json 文件，正在创建新文件。");
-                    File.WriteAllText(@"MSL\frp\config.json", string.Format("{{{0}}}", "\n"));
+                    File.WriteAllText(ConfigPaths.FrpConfig, string.Format("{{{0}}}", "\n"));
                 }
 
-                JObject jobject = JObject.Parse(File.ReadAllText(@"MSL\frp\config.json", Encoding.UTF8));
+                JObject jobject = JObject.Parse(File.ReadAllText(ConfigPaths.FrpConfig, Encoding.UTF8));
 
                 if (CustomFrpcClient.IsChecked == true)//自定义的话要导入进MSL文件夹
                 {
@@ -121,7 +122,7 @@ namespace MSL.pages.frpProviders
                         //文件路径
                         string filePath = openFileDialog.FileName;
                         LogHelper.Write.Info($"用户选择了Frpc客户端: {filePath}。");
-                        File.Copy(filePath, @"MSL/frp/frpc_custom.exe", true);
+                        File.Copy(filePath, ConfigPaths.Frp("frpc_custom.exe"), true);
                         LogHelper.Write.Info("自定义Frpc客户端已成功复制到 MSL/frp/frpc_custom.exe。");
 
                         JObject keyValues = new JObject()
@@ -152,7 +153,7 @@ namespace MSL.pages.frpProviders
 
                 //最后结束
                 string convertString = Convert.ToString(jobject);
-                File.WriteAllText(@"MSL\frp\config.json", convertString, Encoding.UTF8);
+                File.WriteAllText(ConfigPaths.FrpConfig, convertString, Encoding.UTF8);
                 LogHelper.Write.Info("最终配置 config.json 已成功保存。");
                 await MagicShow.ShowMsgDialogAsync(Window.GetWindow(this), Lang.Frp_Custom_TunnelSuccess, "信息");
                 LogHelper.Write.Info($"隧道 {number} (名称: {sn}) 的配置流程已全部成功完成。");

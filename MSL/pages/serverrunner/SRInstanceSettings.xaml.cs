@@ -501,6 +501,7 @@ namespace MSL.pages.serverrunner
             OpenFileDialog openfile = new OpenFileDialog
             {
                 InitialDirectory = AppDomain.CurrentDomain.BaseDirectory,
+                RestoreDirectory = true,
                 Title = LanguageManager.Instance["SR_SelectJarFile"],
                 Filter = LanguageManager.Instance["SR_JarFileFilter"]
             };
@@ -531,6 +532,7 @@ namespace MSL.pages.serverrunner
         {
             OpenFileDialog openfile = new OpenFileDialog();
             openfile.InitialDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            openfile.RestoreDirectory = true;
             openfile.Title = LanguageManager.Instance["SR_SelectJavaExe"];
             openfile.Filter = LanguageManager.Instance["SR_ExeFileFilter"];
             var res = openfile.ShowDialog();
