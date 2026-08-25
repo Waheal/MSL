@@ -670,6 +670,21 @@ MSLAPI —— MSL自有服务端&amp;运行库镜像源
   <data name="App_Error_FatalTitle" xml:space="preserve">
     <value>致命错误</value>
   </data>
+  <data name="App_DotNet_Title" xml:space="preserve">
+    <value>.NET Framework 版本检测</value>
+  </data>
+  <data name="App_DotNet_VersionTooLow" xml:space="preserve">
+    <value>检测到您当前安装的 .NET Framework 版本过低，本软件需要 .NET Framework {0} 或更高版本才能正常运行。</value>
+  </data>
+  <data name="App_DotNet_CurrentVersion" xml:space="preserve">
+    <value>当前版本：{0}</value>
+  </data>
+  <data name="App_DotNet_DownloadHint" xml:space="preserve">
+    <value>请前往微软官网下载并安装 .NET Framework {0} 运行时后再启动本软件。</value>
+  </data>
+  <data name="App_DotNet_UnknownVersion" xml:space="preserve">
+    <value>未知版本</value>
+  </data>
   <data name="MainWindow_Tray_OpenMain" xml:space="preserve">
     <value>打开主界面</value>
   </data>

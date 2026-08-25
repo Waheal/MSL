@@ -152,6 +152,7 @@
     <Compile Include="utils\Config\ConfigStore.cs" />
     <Compile Include="utils\Config\ConfigWriter.cs" />
     <Compile Include="utils\Config\ServerConfig.cs" />
+    <Compile Include="utils\DotnetVerHelper.cs" />
     <Compile Include="utils\DownloadManager.cs" />
     <Compile Include="utils\FrpApiUtils.cs" />
     <Compile Include="utils\Functions.cs" />

@@ -1,6 +1,5 @@
 ﻿using HandyControl.Controls;
 using HandyControl.Themes;
-using HandyControl.Tools;
 using MSL.langs;
 using MSL.pages;
 using MSL.utils;
@@ -17,7 +16,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
 namespace MSL
@@ -518,7 +516,6 @@ namespace MSL
         #region 事件
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            LogHelper.Write.Info("MSL，关闭！");
             if (MainNotifyIcon.Visibility == Visibility.Visible)
             {
                 e.Cancel = true;
@@ -537,6 +534,7 @@ namespace MSL
                     LogHelper.Write.Warn("MSL关闭事件被终止。");
                 }
             }
+            LogHelper.Write.Info("MSL，关闭！");
         }
 
         private void Window_Closed(object sender, EventArgs e)

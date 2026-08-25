@@ -1,8 +1,6 @@
 using MSL.langs;
 using MSL.utils;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -108,6 +106,8 @@ namespace MSL
                 {
                     LogHelper.Write.Warn($"恢复语言设置失败: {langEx.Message}");
                 }
+                // 检查 .NET Framework 版本
+                DotnetVerHelper.CheckDotNetFrameworkVersion();
             }
             finally
             {

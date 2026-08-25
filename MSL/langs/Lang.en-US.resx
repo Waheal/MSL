@@ -669,6 +669,21 @@ Do you want to create a new server?</value>
   <data name="App_Error_FatalTitle" xml:space="preserve">
     <value>Fatal Error</value>
   </data>
+  <data name="App_DotNet_Title" xml:space="preserve">
+    <value>.NET Framework Version Check</value>
+  </data>
+  <data name="App_DotNet_VersionTooLow" xml:space="preserve">
+    <value>The installed .NET Framework version is too low. This software requires .NET Framework {0} or later to run properly.</value>
+  </data>
+  <data name="App_DotNet_CurrentVersion" xml:space="preserve">
+    <value>Current version: {0}</value>
+  </data>
+  <data name="App_DotNet_DownloadHint" xml:space="preserve">
+    <value>Please download and install .NET Framework {0} runtime from the Microsoft website, then restart this software.</value>
+  </data>
+  <data name="App_DotNet_UnknownVersion" xml:space="preserve">
+    <value>Unknown version</value>
+  </data>
   <data name="MainWindow_Tray_OpenMain" xml:space="preserve">
     <value>Open Main Window</value>
   </data>
