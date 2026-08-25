@@ -35,7 +35,7 @@
                         </Path.Data>
                     </Path>
                 </Button>
-                <ListBox x:Name="SideMenu" Width="50" SelectionMode="Single" HorizontalAlignment="Stretch" SelectionChanged="SideMenu_SelectionChanged" Background="{x:Null}" BorderThickness="0" Padding="0">
+                <ListBox x:Name="SideMenu" Width="50" SelectionMode="Single" HorizontalAlignment="Stretch" SelectionChanged="SideMenu_SelectionChanged" controls:ListBoxBehaviors.DisableDragSelection="True" Background="{x:Null}" BorderThickness="0" Padding="0">
                     <ListBoxItem Style="{StaticResource ListItemSideMenu}">
                         <controls:ListBoxSideMenu IconKind="HomeOutline" Text="{Binding [SR_Dashboard], Source={x:Static langs:LanguageManager.Instance}}"/>
                     </ListBoxItem>

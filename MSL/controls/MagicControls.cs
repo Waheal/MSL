@@ -1,6 +1,7 @@
 ﻿using MahApps.Metro.IconPacks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 
@@ -159,6 +160,46 @@ namespace MSL.controls
         {
             get { return (string)GetValue(TextProperty); }
             set { SetValue(TextProperty, value); }
+        }
+    }
+
+    /// <summary>
+    /// 附加行为集合，用于给现有控件（如侧边栏 ListBox）附加通用交互逻辑，
+    /// 避免在每个窗口的代码隐藏里重复写同样的事件处理。
+    /// </summary>
+    public static class ListBoxBehaviors
+    {
+        /// <summary>
+        /// 禁用 ListBox 默认的“鼠标左键按住拖动时连续变更选中项”行为，只保留单击选择。
+        /// 侧边栏（SideMenu）快速拖动会连续触发 SelectionChanged，导致内容区被高频切换，
+        /// 期间子页面的进场动画和 ScrollViewer 还没完成布局就被卸载/重建，偶发把 Infinity
+        /// 赋给 ScrollBar.Value 触发绑定错误。挂上这个附加属性即可屏蔽拖动选择。
+        /// </summary>
+        public static readonly DependencyProperty DisableDragSelectionProperty =
+            DependencyProperty.RegisterAttached(
+                "DisableDragSelection",
+                typeof(bool),
+                typeof(ListBoxBehaviors),
+                new PropertyMetadata(false, OnDisableDragSelectionChanged));
+
+        public static bool GetDisableDragSelection(ListBox listBox) => (bool)listBox.GetValue(DisableDragSelectionProperty);
+
+        public static void SetDisableDragSelection(ListBox listBox, bool value) => listBox.SetValue(DisableDragSelectionProperty, value);
+
+        private static void OnDisableDragSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not ListBox listBox)
+                return;
+
+            listBox.PreviewMouseMove -= ListBox_PreviewMouseMove;
+            if ((bool)e.NewValue)
+                listBox.PreviewMouseMove += ListBox_PreviewMouseMove;
+        }
+
+        private static void ListBox_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+                e.Handled = true;
         }
     }
 
