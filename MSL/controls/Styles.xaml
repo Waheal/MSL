@@ -260,12 +260,12 @@
                                  那个样式带圆角和 Padding，而且 hover 变色写在 Style.Triggers 里，
                                  会被本地的 Background="Transparent" 盖掉，根本看不到悬停反馈。
                                  Focusable=False：不抢侧栏的键盘导航焦点。 -->
-                            <ToggleButton x:Name="ExpandToggle" Grid.Row="0" Height="42" Focusable="False"
-                                          HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                            <ToggleButton x:Name="ExpandToggle" Grid.Row="0" Height="38" Width="42"
+                                          HorizontalAlignment="Left" VerticalAlignment="Top" Margin="4,4,4,2"
                                           IsChecked="{Binding Path=(local:ListBoxBehaviors.SideMenuExpanded), RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
                                 <ToggleButton.Template>
                                     <ControlTemplate TargetType="{x:Type ToggleButton}">
-                                        <Border x:Name="ToggleBorder" Background="Transparent">
+                                        <Border x:Name="ToggleBorder" CornerRadius="7" Background="Transparent">
                                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
                                         <ControlTemplate.Triggers>
