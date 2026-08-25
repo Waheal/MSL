@@ -234,6 +234,73 @@
         </Setter>
     </Style>
     
+    <!-- 侧边栏 ListBox 本体样式：把收起/展开按钮做进模板，配合 ListBoxBehaviors.SideMenuExpanded
+         驱动宽度和配置持久化。MainWindow 和 ServerRunner 直接套用这一个样式即可，
+         不必各自摆一个按钮再写一遍 Click 逻辑。
+         键名带 Style 后缀，避免和控件类 controls:ListBoxSideMenu 混淆。 -->
+    <Style x:Key="ListBoxSideMenuStyle" TargetType="{x:Type ListBox}">
+        <Setter Property="Background" Value="{x:Null}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="SelectionMode" Value="Single"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="ItemContainerStyle" Value="{StaticResource ListItemSideMenu}"/>
+        <Setter Property="local:ListBoxBehaviors.DisableDragSelection" Value="True"/>
+        <Setter Property="local:ListBoxBehaviors.PersistExpandedState" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBox}">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <!-- 收起/展开按钮。用自己的模板而不是 ToggleButton.NoCheckedBorder：
+                                 那个样式带圆角和 Padding，而且 hover 变色写在 Style.Triggers 里，
+                                 会被本地的 Background="Transparent" 盖掉，根本看不到悬停反馈。
+                                 Focusable=False：不抢侧栏的键盘导航焦点。 -->
+                            <ToggleButton x:Name="ExpandToggle" Grid.Row="0" Height="42" Focusable="False"
+                                          HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                                          IsChecked="{Binding Path=(local:ListBoxBehaviors.SideMenuExpanded), RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                        <Border x:Name="ToggleBorder" Background="Transparent">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <!-- 不用 SideMenuItemBrush：它的 Opacity 是 0（item 模板靠动画把它提到 0.5），
+                                                 当成静态底色直接给会完全看不见。 -->
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ToggleBorder" Property="Background" Value="{DynamicResource SecondaryRegionBrush}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="ToggleBorder" Property="Background" Value="{DynamicResource BorderBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                                <Path Stroke="{DynamicResource PrimaryTextBrush}">
+                                    <Path.Data>
+                                        <GeometryGroup>
+                                            <PathGeometry Figures="M 0 0 h 15"/>
+                                            <PathGeometry Figures="M 0 5 h 15"/>
+                                            <PathGeometry Figures="M 0 10 h 15"/>
+                                        </GeometryGroup>
+                                    </Path.Data>
+                                </Path>
+                            </ToggleButton>
+                            <ScrollViewer Grid.Row="1" Focusable="False" Padding="{TemplateBinding Padding}"
+                                          HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden">
+                                <ItemsPresenter/>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="TabItemSideMenu" TargetType="{x:Type TabItem}">
         <Setter Property="HeaderTemplate">
             <Setter.Value>

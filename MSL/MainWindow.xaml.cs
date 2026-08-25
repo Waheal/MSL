@@ -159,9 +159,7 @@ namespace MSL
                 }
                 LogHelper.Write.Info("读取托盘图标配置成功！");
 
-                // 侧边栏
-                SideMenu.Width = cfg.SideMenuExpanded ? double.NaN : 50;
-                LogHelper.Write.Info("读取侧栏配置成功！");
+                // 侧边栏展开状态由 ListBoxSideMenuStyle 自己从配置恢复，这里不再处理
 
                 // 主题色
                 var brushConverter = new BrushConverter();
@@ -633,22 +631,6 @@ namespace MSL
         {
             if (SideMenu.SelectedIndex != -1)
                 frame.Content = Pages[SideMenu.SelectedIndex];
-        }
-
-        private void SideMenuContextOpen_Click(object sender, RoutedEventArgs e)
-        {
-            var cfg = AppConfig.Current;
-            if (SideMenu.Width == 50)
-            {
-                SideMenu.Width = double.NaN;
-                cfg.SideMenuExpanded = true;
-            }
-            else
-            {
-                SideMenu.Width = 50;
-                cfg.SideMenuExpanded = false;
-            }
-            cfg.Save();
         }
         #endregion
 

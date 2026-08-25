@@ -24,34 +24,23 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <StackPanel x:Name="SideMenuPanel" Background="{DynamicResource SideMenuBrush}">
-                <Button x:Name="SideMenuContextOpen" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="42" BorderThickness="0" Background="Transparent" Click="SideMenuContextOpen_Click">
-                    <Path Stroke="{DynamicResource PrimaryTextBrush}">
-                        <Path.Data>
-                            <GeometryGroup>
-                                <PathGeometry Figures="M 0 0 h 15"/>
-                                <PathGeometry Figures="M 0 5 h 15"/>
-                                <PathGeometry Figures="M 0 10 h 15"/>
-                            </GeometryGroup>
-                        </Path.Data>
-                    </Path>
-                </Button>
-                <ListBox x:Name="SideMenu" Width="50" SelectionMode="Single" HorizontalAlignment="Stretch" SelectionChanged="SideMenu_SelectionChanged" controls:ListBoxBehaviors.DisableDragSelection="True" Background="{x:Null}" BorderThickness="0" Padding="0">
-                    <ListBoxItem Style="{StaticResource ListItemSideMenu}">
+                <ListBox x:Name="SideMenu" Style="{StaticResource ListBoxSideMenuStyle}" SelectionChanged="SideMenu_SelectionChanged">
+                    <ListBoxItem>
                         <controls:ListBoxSideMenu IconKind="HomeOutline" Text="{Binding [SR_Dashboard], Source={x:Static langs:LanguageManager.Instance}}"/>
                     </ListBoxItem>
-                    <ListBoxItem Style="{StaticResource ListItemSideMenu}">
+                    <ListBoxItem>
                         <controls:ListBoxSideMenu IconKind="Console" Text="{Binding [SR_Console], Source={x:Static langs:LanguageManager.Instance}}"/>
                     </ListBoxItem>
-                    <ListBoxItem Style="{StaticResource ListItemSideMenu}">
+                    <ListBoxItem>
                         <controls:ListBoxSideMenu IconKind="FolderFileOutline" Text="{Binding [SR_PluginsMods], Source={x:Static langs:LanguageManager.Instance}}"/>
                     </ListBoxItem>
-                    <ListBoxItem Style="{StaticResource ListItemSideMenu}">
+                    <ListBoxItem>
                         <controls:ListBoxSideMenu IconKind="Tune" Text="{Binding [SR_InstanceSettings], Source={x:Static langs:LanguageManager.Instance}}"/>
                     </ListBoxItem>
-                    <ListBoxItem Style="{StaticResource ListItemSideMenu}">
+                    <ListBoxItem>
                         <controls:ListBoxSideMenu IconKind="ViewGridOutline" Text="{Binding [SR_MoreFeatures], Source={x:Static langs:LanguageManager.Instance}}"/>
                     </ListBoxItem>
-                    <ListBoxItem Style="{StaticResource ListItemSideMenu}">
+                    <ListBoxItem>
                         <controls:ListBoxSideMenu IconKind="TimerOutline" Text="{Binding [SR_ScheduledTasks], Source={x:Static langs:LanguageManager.Instance}}"/>
                     </ListBoxItem>
                 </ListBox>

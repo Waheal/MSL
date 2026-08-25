@@ -1,4 +1,6 @@
 ﻿using MahApps.Metro.IconPacks;
+using MSL.utils;
+using MSL.utils.Config;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -189,6 +191,108 @@ namespace MSL.controls
 
         public static void SetDisableDragSelection(ListBox listBox, bool value) => listBox.SetValue(DisableDragSelectionProperty, value);
 
+        /// <summary>
+        /// 侧边栏展开状态。ListBoxSideMenuStyle 的模板里由收起按钮双向绑定这个属性，
+        /// 属性变更时直接换 ListBox 的宽度（展开为自适应，收起为固定 <see cref="CollapsedWidth"/>）。
+        /// 这样收起功能属于侧边栏样式本身，套用样式的窗口不需要各自摆一个按钮再写一遍逻辑。
+        /// </summary>
+        public static readonly DependencyProperty SideMenuExpandedProperty =
+            DependencyProperty.RegisterAttached(
+                "SideMenuExpanded",
+                typeof(bool),
+                typeof(ListBoxBehaviors),
+                new PropertyMetadata(true, OnSideMenuExpandedChanged));
+
+        public static bool GetSideMenuExpanded(ListBox listBox) => (bool)listBox.GetValue(SideMenuExpandedProperty);
+
+        public static void SetSideMenuExpanded(ListBox listBox, bool value) => listBox.SetValue(SideMenuExpandedProperty, value);
+
+        /// <summary>
+        /// 是否把展开状态读写到 AppConfig.SideMenuExpanded：加载时按配置恢复，用户点按钮时写回。
+        /// 不需要持久化的侧边栏可以关掉，只保留纯 UI 行为。
+        /// </summary>
+        public static readonly DependencyProperty PersistExpandedStateProperty =
+            DependencyProperty.RegisterAttached(
+                "PersistExpandedState",
+                typeof(bool),
+                typeof(ListBoxBehaviors),
+                new PropertyMetadata(false, OnPersistExpandedStateChanged));
+
+        public static bool GetPersistExpandedState(ListBox listBox) => (bool)listBox.GetValue(PersistExpandedStateProperty);
+
+        public static void SetPersistExpandedState(ListBox listBox, bool value) => listBox.SetValue(PersistExpandedStateProperty, value);
+
+        /// <summary>收起状态下的侧边栏宽度，正好露出图标</summary>
+        private const double CollapsedWidth = 50;
+
+        // 从配置恢复状态时不要再写回配置，避免一次无意义的落盘
+        private static bool _suppressPersist;
+
+        private static void OnSideMenuExpandedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not ListBox listBox)
+                return;
+
+            ApplyExpandedWidth(listBox, (bool)e.NewValue);
+
+            if (_suppressPersist || !GetPersistExpandedState(listBox))
+                return;
+
+            try
+            {
+                var cfg = AppConfig.Current;
+                cfg.SideMenuExpanded = (bool)e.NewValue;
+                cfg.Save();
+            }
+            catch (Exception ex)
+            {
+                LogHelper.Write.Error("保存侧栏展开状态失败：" + ex.Message);
+            }
+        }
+
+        // Width 用 NaN 表示 Auto，NaN 不能参与动画，这里直接赋值
+        private static void ApplyExpandedWidth(ListBox listBox, bool expanded) =>
+            listBox.Width = expanded ? double.NaN : CollapsedWidth;
+
+        private static void OnPersistExpandedStateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not ListBox listBox)
+                return;
+
+            listBox.Loaded -= SideMenu_Loaded;
+            if ((bool)e.NewValue)
+                listBox.Loaded += SideMenu_Loaded;
+        }
+
+        private static void SideMenu_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is not ListBox listBox)
+                return;
+
+            var expanded = true;
+            try
+            {
+                expanded = AppConfig.Current.SideMenuExpanded;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.Write.Error("读取侧栏展开状态失败，按展开处理：" + ex.Message);
+            }
+
+            _suppressPersist = true;
+            try
+            {
+                SetSideMenuExpanded(listBox, expanded);
+            }
+            finally
+            {
+                _suppressPersist = false;
+            }
+
+            // 配置值与属性当前值一致时上面不触发变更回调，这里补一次宽度，保证首帧状态正确
+            ApplyExpandedWidth(listBox, expanded);
+        }
+
         // 按压缩放动画的参数，与原 XAML 中的手感保持一致
         private const double PressedScale = 0.92;
         private static readonly Duration PressDuration = new Duration(TimeSpan.FromSeconds(0.08));
@@ -286,7 +390,7 @@ namespace MSL.controls
 
         private static void ListBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (IsScrollBarsHitTest(e.OriginalSource as DependencyObject))
+            if (IsPassthroughHitTest(e.OriginalSource as DependencyObject))
                 return;
 
             UpdatePressedItem(FindParent<ListBoxItem>(e.OriginalSource as DependencyObject));
@@ -296,6 +400,9 @@ namespace MSL.controls
         private static void ListBox_PreviewMouseMove(object sender, MouseEventArgs e)
         {
             if (e.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            if (IsPassthroughHitTest(e.OriginalSource as DependencyObject))
                 return;
 
             // 按住后滑到别的项上就撤掉按压反馈，避免松手时还停在按下状态
@@ -317,7 +424,7 @@ namespace MSL.controls
 
             if (sender is not ListBox listBox)
                 return;
-            if (IsScrollBarsHitTest(e.OriginalSource as DependencyObject))
+            if (IsPassthroughHitTest(e.OriginalSource as DependencyObject))
                 return;
 
             var pos = e.GetPosition(listBox);
@@ -332,12 +439,18 @@ namespace MSL.controls
             }
         }
 
-        private static bool IsScrollBarsHitTest(DependencyObject source)
+        /// <summary>
+        /// 需要放行的命中目标：模板里的滚动条，以及侧边栏收起按钮这类按钮。
+        /// 不放行的话，下面把 PreviewMouseLeftButtonDown 标为 Handled 会让模板内的按钮收不到点击。
+        /// </summary>
+        private static bool IsPassthroughHitTest(DependencyObject source)
         {
             while (source != null)
             {
-                if (source is ScrollBar)
+                if (source is ScrollBar || source is ButtonBase)
                     return true;
+                if (source is ListBox)
+                    return false;
                 source = VisualTreeHelper.GetParent(source);
             }
             return false;

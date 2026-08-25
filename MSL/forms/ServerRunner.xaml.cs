@@ -127,14 +127,7 @@ namespace MSL
         private async Task<bool> LoadingInfoEvent()
         {
             AppConfig config = AppConfig.Current;
-            if (config.SideMenuExpanded == true)
-            {
-                SideMenu.Width = double.NaN;
-            }
-            else
-            {
-                SideMenu.Width = 50;
-            }
+            // 侧边栏展开状态由 ListBoxSideMenuStyle 自己从配置恢复，这里不再处理
 
             // 加载 MoreFunctions 页面的配置
             _moreFunctionsPage.LoadConfig(config);
@@ -230,20 +223,6 @@ namespace MSL
                 case 3: // Settings
                     _instanceSettingsPage.RefreshServerConfig();
                     break;
-            }
-        }
-
-        private void SideMenuContextOpen_Click(object sender, RoutedEventArgs e)
-        {
-            if (SideMenu.Width == 50)
-            {
-                SideMenu.Width = double.NaN;
-                try { Config.Write("sidemenuExpanded", true); } catch { }
-            }
-            else
-            {
-                SideMenu.Width = 50;
-                try { Config.Write("sidemenuExpanded", false); } catch { }
             }
         }
 
