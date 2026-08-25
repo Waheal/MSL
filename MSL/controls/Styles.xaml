@@ -223,44 +223,11 @@
                             <Setter TargetName="Rect" Property="Fill" Value="{DynamicResource DarkPrimaryBrush}"/>
                             <Setter TargetName="Border" Property="Background" Value="{DynamicResource BorderBackground}"/>
                         </Trigger>
-                        <!-- WinUI3 风格按压反馈：按下时整项轻微缩小“下陷”，松开/移出时弹回。
-                             侧边栏用 ListBoxBehaviors.DisableDragSelection 屏蔽拖动选择，会在隧道阶段把
-                             PreviewMouseLeftButtonDown 标为 Handled，冒泡的 Mouse.MouseDown/MouseUp 因此不会发出，
-                             不能用 EventTrigger，改由行为类的 IsPressed 附加属性驱动。 -->
-                        <DataTrigger Binding="{Binding (local:ListBoxBehaviors.IsPressed), RelativeSource={RelativeSource Self}}" Value="True">
-                            <DataTrigger.EnterActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleX" To="0.92" Duration="0:0:0.08">
-                                            <DoubleAnimation.EasingFunction>
-                                                <CircleEase EasingMode="EaseOut"/>
-                                            </DoubleAnimation.EasingFunction>
-                                        </DoubleAnimation>
-                                        <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleY" To="0.92" Duration="0:0:0.08">
-                                            <DoubleAnimation.EasingFunction>
-                                                <CircleEase EasingMode="EaseOut"/>
-                                            </DoubleAnimation.EasingFunction>
-                                        </DoubleAnimation>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </DataTrigger.EnterActions>
-                            <DataTrigger.ExitActions>
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.15">
-                                            <DoubleAnimation.EasingFunction>
-                                                <CircleEase EasingMode="EaseOut"/>
-                                            </DoubleAnimation.EasingFunction>
-                                        </DoubleAnimation>
-                                        <DoubleAnimation Storyboard.TargetName="BorderScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.15">
-                                            <DoubleAnimation.EasingFunction>
-                                                <CircleEase EasingMode="EaseOut"/>
-                                            </DoubleAnimation.EasingFunction>
-                                        </DoubleAnimation>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </DataTrigger.ExitActions>
-                        </DataTrigger>
+                        <!-- WinUI3 风格按压反馈（按下轻微下陷、松开弹回）由 ListBoxBehaviors 在代码里
+                             直接对下面 Border 的 ScaleTransform 做动画。不在这里用 EventTrigger/DataTrigger：
+                             DisableDragSelection 会把 PreviewMouseLeftButtonDown 标为 Handled，
+                             冒泡的 Mouse.MouseDown/MouseUp 不再发出；且触发器的绑定路径与
+                             Storyboard.TargetName 都是运行时按字符串解析，解析失败时静默无动画。 -->
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

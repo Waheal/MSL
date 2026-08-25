@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 
 namespace MSL.controls
@@ -188,22 +189,10 @@ namespace MSL.controls
 
         public static void SetDisableDragSelection(ListBox listBox, bool value) => listBox.SetValue(DisableDragSelectionProperty, value);
 
-        /// <summary>
-        /// 标记 ListBoxItem 当前是否被鼠标按住，供模板驱动按压动画。
-        /// DisableDragSelection 必须吞掉 PreviewMouseLeftButtonDown 才能屏蔽拖动选择，
-        /// 而隧道事件一旦 Handled，WPF 就不再抛出冒泡的 Mouse.MouseDown/MouseUp，
-        /// 模板里基于这两个事件的 EventTrigger 永远不会触发，所以改用附加属性传递按压状态。
-        /// </summary>
-        public static readonly DependencyProperty IsPressedProperty =
-            DependencyProperty.RegisterAttached(
-                "IsPressed",
-                typeof(bool),
-                typeof(ListBoxBehaviors),
-                new PropertyMetadata(false));
-
-        public static bool GetIsPressed(ListBoxItem item) => (bool)item.GetValue(IsPressedProperty);
-
-        public static void SetIsPressed(ListBoxItem item, bool value) => item.SetValue(IsPressedProperty, value);
+        // 按压缩放动画的参数，与原 XAML 中的手感保持一致
+        private const double PressedScale = 0.92;
+        private static readonly Duration PressDuration = new Duration(TimeSpan.FromSeconds(0.08));
+        private static readonly Duration ReleaseDuration = new Duration(TimeSpan.FromSeconds(0.15));
 
         // 用弱引用持有，避免按住时窗体被关闭导致 ListBoxItem 及其可视树被静态字段拖住不放
         private static WeakReference<ListBoxItem> _pressedItem;
@@ -218,12 +207,63 @@ namespace MSL.controls
                 return;
 
             if (previous != null)
-                SetIsPressed(previous, false);
+                AnimatePress(previous, false);
 
             _pressedItem = item == null ? null : new WeakReference<ListBoxItem>(item);
 
             if (item != null)
-                SetIsPressed(item, true);
+                AnimatePress(item, true);
+        }
+
+        /// <summary>
+        /// 直接对模板里的 ScaleTransform 做动画。
+        /// 这里不用 XAML 的 EventTrigger/DataTrigger：DisableDragSelection 必须吞掉
+        /// PreviewMouseLeftButtonDown 才能屏蔽拖动选择，而隧道事件一旦 Handled，
+        /// WPF 就不再抛出冒泡的 Mouse.MouseDown/MouseUp，EventTrigger 收不到事件；
+        /// 而触发器里的绑定路径和 Storyboard.TargetName 都是运行时按字符串解析的，
+        /// 解析失败不报错也不动画，难以排查。改成在代码里拿到 ScaleTransform 直接动画，
+        /// 出问题时是编译错误或空引用，行为明确。
+        /// </summary>
+        private static void AnimatePress(ListBoxItem item, bool pressed)
+        {
+            var scale = FindPressScaleTransform(item);
+            if (scale == null)
+                return;
+
+            var to = pressed ? PressedScale : 1.0;
+            var duration = pressed ? PressDuration : ReleaseDuration;
+            var animation = new DoubleAnimation(to, duration)
+            {
+                EasingFunction = new CircleEase { EasingMode = EasingMode.EaseOut },
+                FillBehavior = FillBehavior.HoldEnd
+            };
+
+            scale.BeginAnimation(ScaleTransform.ScaleXProperty, animation);
+            scale.BeginAnimation(ScaleTransform.ScaleYProperty, animation);
+        }
+
+        /// <summary>
+        /// 取模板根 Border 上的 ScaleTransform，没有则不做动画（其他样式的 ListBoxItem 不受影响）。
+        /// </summary>
+        private static ScaleTransform FindPressScaleTransform(ListBoxItem item)
+        {
+            if (VisualTreeHelper.GetChildrenCount(item) == 0)
+                return null;
+
+            if (VisualTreeHelper.GetChild(item, 0) is not UIElement root)
+                return null;
+
+            if (root.RenderTransform is not ScaleTransform scale)
+                return null;
+
+            // 模板里的 Freezable 可能以冻结状态交付，冻结对象上 BeginAnimation 会抛异常，换成可写副本
+            if (scale.IsFrozen)
+            {
+                scale = scale.Clone();
+                root.RenderTransform = scale;
+            }
+
+            return scale;
         }
 
         private static void OnDisableDragSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
