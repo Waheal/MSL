@@ -23,15 +23,9 @@ namespace MSL.utils.Config
                 NullValueHandling = NullValueHandling.Ignore,
             };
             public FullSaveJob(AppConfig cfg) => _cfg = cfg;
-            private static readonly object _configLock = new object();
             public override void Execute()
             {
-                string json;
-                lock (_configLock)
-                {
-                    json = JsonConvert.SerializeObject(_cfg, _settings);
-                }
-
+                string json = JsonConvert.SerializeObject(_cfg, _settings);
                 AtomicWrite(AppConfig.ConfigPath, json);
             }
         }
@@ -77,25 +71,52 @@ namespace MSL.utils.Config
         }
 
         // 队列&调度
-        private static readonly ConcurrentQueue<WriteJob> _queue = new ConcurrentQueue<WriteJob>();
+        private static readonly ConcurrentQueue<(WriteJob job, TaskCompletionSource<bool> tcs)> _queue
+            = new ConcurrentQueue<(WriteJob, TaskCompletionSource<bool>)>();
+        private static readonly object _queueLock = new object();
         private static Task _task = Task.CompletedTask;
         private const int MaxRetries = 5;
 
-        private static void Enqueue(WriteJob job)
+        private static Task Enqueue(WriteJob job, TaskCompletionSource<bool> tcs = null)
         {
-            _queue.Enqueue(job);
-            // 若上一个 Task 已完成，启动新的消费循环
-            if (_task.IsCompleted)
+            tcs = tcs ?? new TaskCompletionSource<bool>();
+            lock (_queueLock)
             {
-                _task = Task.Run(DrainQueue);
+                _queue.Enqueue((job, tcs));
+                if (_task.IsCompleted)
+                    _task = Task.Run(DrainQueue);
             }
+            return tcs.Task;
         }
 
         private static void DrainQueue()
         {
-            while (_queue.TryDequeue(out WriteJob job))
+            while (true)
+            {
+                (WriteJob job, TaskCompletionSource<bool> tcs) item;
+                lock (_queueLock)
+                {
+                    if (!_queue.TryDequeue(out item))
+                    {
+                        _task = Task.CompletedTask;
+                        return;
+                    }
+                }
+                ExecuteAndSignal(item.job, item.tcs);
+            }
+        }
+
+        private static void ExecuteAndSignal(WriteJob job, TaskCompletionSource<bool> tcs)
+        {
+            try
             {
                 ExecuteWithRetry(job);
+                tcs.TrySetResult(true);
+            }
+            catch (System.Exception ex)
+            {
+                LogHelper.Write.Error($"[ConfigWriter] 配置写入失败，已放弃: {ex}");
+                tcs.TrySetException(ex);
             }
         }
 
@@ -116,6 +137,7 @@ namespace MSL.utils.Config
                 catch (IOException ex)
                 {
                     LogHelper.Write.Error($"[ConfigWriter] 写入失败，已放弃: {ex.Message}");
+                    return;
                 }
             }
         }
@@ -155,9 +177,18 @@ namespace MSL.utils.Config
         internal static void EnqueueRemoveKey(string path, string key) => Enqueue(new RemoveKeyJob(path, key));
 
         internal static void EnqueueFullSave(ServerConfig cfg) => Enqueue(new ServerConfigSaveJob(cfg));
-        internal static void ExecuteNow(ServerConfig cfg) => ExecuteWithRetry(new ServerConfigSaveJob(cfg));
+
+        internal static void ExecuteNow(ServerConfig cfg)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            Enqueue(new ServerConfigSaveJob(cfg), tcs).GetAwaiter().GetResult();
+        }
 
         /// <summary>同步立即执行（仅初始化场景使用）</summary>
-        internal static void ExecuteNow(AppConfig cfg) => ExecuteWithRetry(new FullSaveJob(cfg));
+        internal static void ExecuteNow(AppConfig cfg)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            Enqueue(new FullSaveJob(cfg), tcs).GetAwaiter().GetResult();
+        }
     }
 }

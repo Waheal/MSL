@@ -542,8 +542,10 @@ namespace MSL
         private void Window_Closed(object sender, EventArgs e)
         {
             DownloadManager.Instance.Dispose();
-            AppConfig.Current.SaveImmediate();      // 同步写，阻塞直到完成
-            ServerConfig.Current.SaveImmediate();   // 同步写，阻塞直到完成
+            try { AppConfig.Current.SaveImmediate(); }       // 同步写，阻塞直到完成
+            catch (Exception ex) { LogHelper.Write.Error($"[关闭] AppConfig 保存失败: {ex.Message}"); }
+            try { ServerConfig.Current.SaveImmediate(); }    // 同步写，阻塞直到完成
+            catch (Exception ex) { LogHelper.Write.Error($"[关闭] ServerConfig 保存失败: {ex.Message}"); }
             Application.Current.Shutdown();
         }
 
