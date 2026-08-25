@@ -248,7 +248,7 @@ namespace MSL.utils
         {
             Random random = new Random();
             int a = random.Next();
-            if (!Directory.Exists("MSL\\frp\\" + a.ToString()))
+            if (!Directory.Exists(MSL.utils.Config.ConfigPaths.Frp(a.ToString())))
             {
                 return a;
             }
