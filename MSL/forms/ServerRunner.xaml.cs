@@ -182,6 +182,22 @@ namespace MSL
 
         public void DisposeRes()
         {
+            // 取消订阅静态事件，否则该窗体实例（及其持有的全部子页面/ServerService）
+            // 会被 SettingsPage.ChangeSkinStyle 的静态订阅列表永久引用，导致无法被 GC 回收。
+            SettingsPage.ChangeSkinStyle -= ChangeSkinStyle;
+
+            // 【关键修复】HandyControl 的 Growl.GrowlPanel 是静态字段。Window_Activated 里调用
+            // Growl.SetGrowlParent(GrowlPanel, true) 会把该静态字段指向本窗体内部的 GrowlPanel 控件；
+            // 而 Window_Deactivated 里的 SetGrowlParent(GrowlPanel, false) 在 HandyControl 内部实现中
+            // 并不会清空 GrowlPanel（attached property 回调只处理 true 分支）。
+            // 结果只要本窗体被激活过一次，Growl 静态类就会永久持有本窗体内部 Panel 的引用，
+            // 通过可视化树反向链住整个窗体、六个子页面和 MCServerService，无法被 GC 回收。
+            // 在关闭时主动判断并清空，避免这个引用链持续持有。
+            if (ReferenceEquals(HandyControl.Controls.Growl.GrowlPanel, GrowlPanel))
+            {
+                HandyControl.Controls.Growl.GrowlPanel = null;
+            }
+
             _dashboardPage?.CleanupSystemMonitoring();
             ServerService?.Dispose();
         }
