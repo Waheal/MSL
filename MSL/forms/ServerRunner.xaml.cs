@@ -198,6 +198,24 @@ namespace MSL
                 HandyControl.Controls.Growl.GrowlPanel = null;
             }
 
+            // 【关键修复2】HandyControl.Tools.MicaHelper 内部有 private static Window _window 字段，
+            // 每次任意窗口调用 window.Apply(backdropType)（由 SystemBackdropTypeProperty 变更触发，
+            // 而 SkinHelper.ApplySkin 在 ChangeSkinStyle() 里对每个 ServerRunner 都会触发该属性变更）
+            // 都会把 _window 指向"最后一个设置背景类型的窗口"，且从不清空。
+            // 一旦某个 ServerRunner 是最后一次触发者，MicaHelper._window 就会永久钉住它，
+            // 导致该实例（及其全部子页面/ServerService）无法被 GC 回收。
+            // 通过反射清空该静态字段，切断这条引用链（仅当它当前指向本窗体时才清空，避免误伤其他窗体）。
+            try
+            {
+                var micaWindowField = typeof(HandyControl.Tools.MicaHelper).GetField("_window",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+                if (micaWindowField != null && ReferenceEquals(micaWindowField.GetValue(null), this))
+                {
+                    micaWindowField.SetValue(null, null);
+                }
+            }
+            catch { /* 反射失败不影响正常关闭流程 */ }
+
             _dashboardPage?.CleanupSystemMonitoring();
             ServerService?.Dispose();
         }
