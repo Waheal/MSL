@@ -31,6 +31,7 @@ namespace MSL.pages
 
         private bool isInit = false;
         private CancellationTokenSource _loadingCancellationTokenSource;
+        private DateTime? _lastNoticeCheckTime;
 
         private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
@@ -92,6 +93,13 @@ namespace MSL.pages
 
         private async Task GetNotice(bool firstLoad = false)
         {
+            // 检查是否需要请求公告（距离上次检查是否超过24小时）
+            if (!ShouldCheckNotice())
+            {
+                LogHelper.Write.Info("距离上次检查公告不足24小时，跳过API请求。");
+                return;
+            }
+
             // 获取公告版本
             string currentNoticeVersion = string.Empty;
             try
@@ -116,7 +124,7 @@ namespace MSL.pages
 
             string savedNoticeVersion = GetSavedNoticeVersion();
 
-            // 如果公告版本不同 或 首次加载
+            // 如果公告版本不同或者是首次加载，则获取新公告
             if (currentNoticeVersion != savedNoticeVersion || firstLoad)
             {
                 LogHelper.Write.Info($"准备获取新公告。在线版本: {currentNoticeVersion}, 本地版本: {savedNoticeVersion}");
@@ -137,8 +145,8 @@ namespace MSL.pages
 
                     if (currentNoticeVersion != savedNoticeVersion)
                     {
-                        await ShowNoticeDialogWhenLoaded(notice);
-                    }
+                    await ShowNoticeDialogWhenLoaded(notice);
+                }
                 }
                 else
                 {
@@ -164,7 +172,27 @@ namespace MSL.pages
                     RenderContentToPanel(noticeStackPanel, noticeText);
                 }
             }
+
+            // 更新上次检查时间
+            _lastNoticeCheckTime = DateTime.Now;
         }
+
+        /// <summary>
+        /// 判断是否应该检查公告（距离上次检查是否超过24小时）
+        /// </summary>
+        private bool ShouldCheckNotice()
+        {
+            // 如果从未检查过，需要检查
+            if (!_lastNoticeCheckTime.HasValue)
+            {
+                return true;
+            }
+
+            // 检查是否超过24小时
+            TimeSpan elapsed = DateTime.Now - _lastNoticeCheckTime.Value;
+            return elapsed.TotalHours >= 24;
+        }
+
 
         private async Task<string> GetCurrentNoticeVersion()
         {

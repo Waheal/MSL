@@ -8,11 +8,14 @@ using Newtonsoft.Json.Linq;
 using System.Windows.Controls;
 using MSL.utils;
 using MSL.langs;
+using System.Diagnostics;
 
 namespace MSL.pages
 {
     public partial class About : Page
     {
+        private bool isInit = false;
+
         public class Stargazer
         {
             public string User { get; set; }
@@ -47,23 +50,27 @@ namespace MSL.pages
             // 清除 WPF 图片缓存
             BitmapImage dummy = new BitmapImage();
             dummy.BeginInit();
-            dummy.UriSource = new Uri("https://placeholder.invalid/clear");
+            dummy.UriSource = null;
             dummy.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
             dummy.CacheOption = BitmapCacheOption.None;
             // 不 EndInit，直接丢弃，只是为了触发缓存清理时机
 
             GC.Collect();
-            GC.WaitForPendingFinalizers();
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            LoadContributorsData();
+            if (isInit)
+            {
+                LoadStarsDataAsync();
+                return;
+            }
+            isInit = true;
             AbortSoftwareCard.Title = string.Format(
                 LanguageManager.Instance["Page_About_AboutMSL"],
                 ConfigStore.MSLVersion.ToString());
-
-            LoadContributorsData();
-            LoadStarsDataAsync();
+            LoadStarsDataAsync(true);
         }
 
         private void LoadContributorsData()
@@ -88,43 +95,54 @@ namespace MSL.pages
             });
         }
 
-        private async void LoadStarsDataAsync()
+        private JArray StarUserInfo;
+
+        private async void LoadStarsDataAsync(bool isIniting=false)
         {
             try
             {
-                HttpResponse response = await HttpService.GetApiAsync("/stat/stars?project=MSL&count=300");
-                if (response.HttpResponseCode == HttpStatusCode.OK)
+                if (isIniting)
                 {
-                    JObject json = JObject.Parse(response.HttpResponseContent.ToString());
-                    if ((int)json["code"] == 200)
+                    HttpResponse response = await HttpService.GetApiAsync("/stat/stars?project=MSL&count=100");
+                    if (response.HttpResponseCode == HttpStatusCode.OK)
                     {
-                        var dataArray = json["data"]["data"] as JArray;
-                        if (dataArray != null)
+                        JObject json = JObject.Parse(response.HttpResponseContent.ToString());
+                        if ((int)json["code"] == 200)
                         {
-                            foreach (var item in dataArray)
-                            {
-                                _allStars.Add(new Stargazer
-                                {
-                                    User = item["user"].ToString(),
-                                    AvatarUrl = item["avatar"].ToString()
-                                });
-                            }
+                            StarUserInfo = json["data"]["data"] as JArray;
+
                         }
-
-                        int loadCount = Math.Min(50, _allStars.Count);
-                        for (int i = 0; i < loadCount; i++)
-                            _displayStars.Add(_allStars[i]);
-
-                        if (_allStars.Count > 50)
-                            BtnLoadMoreStars.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        return;
                     }
                 }
+                if (StarUserInfo != null)
+                {
+                    foreach (var item in StarUserInfo)
+                    {
+                        _allStars.Add(new Stargazer
+                        {
+                            User = item["user"].ToString(),
+                            AvatarUrl = item["avatar"].ToString()
+                        });
+                    }
+                }
+
+                int loadCount = Math.Min(50, _allStars.Count);
+                for (int i = 0; i < loadCount; i++)
+                    _displayStars.Add(_allStars[i]);
+
+                if (_allStars.Count > 50)
+                    BtnLoadMoreStars.Visibility = Visibility.Visible;
             }
             catch (Exception) { }
         }
 
         private async void BtnLoadMoreStars_Click(object sender, RoutedEventArgs e)
         {
+            /*
             BtnLoadMoreStars.Visibility = Visibility.Collapsed;
             int currentCount = _displayStars.Count;
             int totalCount = _allStars.Count;
@@ -135,6 +153,8 @@ namespace MSL.pages
                 if (i % 20 == 0)
                     await System.Threading.Tasks.Task.Delay(1);
             }
+            */
+            Process.Start("https://github.com/MSLTeam/MSL/");
         }
     }
 }

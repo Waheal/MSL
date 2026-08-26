@@ -79,6 +79,51 @@ namespace MSL.langs {
         }
         
         /// <summary>
+        ///   查找类似 当前版本：{0} 的本地化字符串。
+        /// </summary>
+        public static string App_DotNet_CurrentVersion {
+            get {
+                return ResourceManager.GetString("App_DotNet_CurrentVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 请前往微软官网下载并安装 .NET Framework {0} 运行时后再启动本软件。 的本地化字符串。
+        /// </summary>
+        public static string App_DotNet_DownloadHint {
+            get {
+                return ResourceManager.GetString("App_DotNet_DownloadHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 .NET Framework 版本检测 的本地化字符串。
+        /// </summary>
+        public static string App_DotNet_Title {
+            get {
+                return ResourceManager.GetString("App_DotNet_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 未知版本 的本地化字符串。
+        /// </summary>
+        public static string App_DotNet_UnknownVersion {
+            get {
+                return ResourceManager.GetString("App_DotNet_UnknownVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 检测到您当前安装的 .NET Framework 版本过低，本软件需要 .NET Framework {0} 或更高版本才能正常运行。 的本地化字符串。
+        /// </summary>
+        public static string App_DotNet_VersionTooLow {
+            get {
+                return ResourceManager.GetString("App_DotNet_VersionTooLow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 请检查是否安装了.NET Framework 4.7.2运行库。 的本地化字符串。
         /// </summary>
         public static string App_Error_CheckDotNet {
@@ -158,52 +203,7 @@ namespace MSL.langs {
                 return ResourceManager.GetString("App_Error_UnknownError", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   查找类似 .NET Framework 版本检测 的本地化字符串。
-        /// </summary>
-        public static string App_DotNet_Title {
-            get {
-                return ResourceManager.GetString("App_DotNet_Title", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   查找类似 检测到您当前安装的 .NET Framework 版本过低... 的本地化字符串。
-        /// </summary>
-        public static string App_DotNet_VersionTooLow {
-            get {
-                return ResourceManager.GetString("App_DotNet_VersionTooLow", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   查找类似 当前版本：{0} 的本地化字符串。
-        /// </summary>
-        public static string App_DotNet_CurrentVersion {
-            get {
-                return ResourceManager.GetString("App_DotNet_CurrentVersion", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   查找类似 请前往微软官网下载并安装... 的本地化字符串。
-        /// </summary>
-        public static string App_DotNet_DownloadHint {
-            get {
-                return ResourceManager.GetString("App_DotNet_DownloadHint", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   查找类似 未知版本 的本地化字符串。
-        /// </summary>
-        public static string App_DotNet_UnknownVersion {
-            get {
-                return ResourceManager.GetString("App_DotNet_UnknownVersion", resourceCulture);
-            }
-        }
-
+        
         /// <summary>
         ///   查找类似 取消 的本地化字符串。
         /// </summary>
@@ -2775,7 +2775,7 @@ namespace MSL.langs {
         }
         
         /// <summary>
-        ///   查找类似 展开更多... 的本地化字符串。
+        ///   查找类似 查看更多... 的本地化字符串。
         /// </summary>
         public static string Page_About_LoadMore {
             get {

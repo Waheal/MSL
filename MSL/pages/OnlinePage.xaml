@@ -47,9 +47,12 @@
                                         <TextBlock Grid.Column="1" Text="{Binding [Page_OnlinePage_Announce], Source={x:Static langs:LanguageManager.Instance}}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="13" Margin="8,0,0,0" VerticalAlignment="Center" TextWrapping="Wrap"/>
                                     </Grid>
                                 </Border>
-                                <TextBlock x:Name="serverState" Text="{Binding [Page_OnlinePage_ServerStatusChecking], Source={x:Static langs:LanguageManager.Instance}}" 
-                                           Foreground="{DynamicResource DarkPrimaryBrush}" 
-                                           Margin="10,5,0,10" VerticalAlignment="Top" HorizontalAlignment="Left" FontSize="16"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock x:Name="serverState" Text="{Binding [Page_OnlinePage_ServerStatusChecking], Source={x:Static langs:LanguageManager.Instance}}" 
+                                               Foreground="{DynamicResource DarkPrimaryBrush}" Margin="10,10,10,10"
+                                               VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="16"/>
+                                    <Button x:Name="RefreshStatus" Content="{Binding [Refresh], Source={x:Static langs:LanguageManager.Instance}}" Click="RefreshStatus_Click"/>
+                                </StackPanel>
                                 <Expander x:Name="masterExp" Margin="10,0,10,0" Expanded="masterExp_Expanded" Header="{Binding [Page_OnlinePage_Header_Create], Source={x:Static langs:LanguageManager.Instance}}" >
                                     <WrapPanel>
                                         <StackPanel Orientation="Horizontal" Margin="10">

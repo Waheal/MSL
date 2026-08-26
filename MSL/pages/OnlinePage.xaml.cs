@@ -49,8 +49,12 @@ namespace MSL.pages
             txtActiveConnections.Text = string.Format(Lang.Page_OnlinePage_ActiveConnections, 0, MaxThreads);
         }
 
+        private bool isInit = false;
+
         private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            if (isInit) return;
+            isInit = true;
             LogHelper.Write.Info("联机页面已加载，开始检查本地P2P配置。");
             masterExp.IsExpanded = true;
             if (File.Exists("MSL\\frp\\P2Pfrpc"))
@@ -120,6 +124,11 @@ namespace MSL.pages
         }
 
         private string ReadFrpcConfig() => File.Exists("MSL\\frp\\P2Pfrpc") ? File.ReadAllText("MSL\\frp\\P2Pfrpc") : null;
+
+        private async void RefreshStatus_Click(object sender, RoutedEventArgs e)
+        {
+            await GetFrpcInfo();
+        }
 
         private void masterExp_Expanded(object sender, RoutedEventArgs e)
         {

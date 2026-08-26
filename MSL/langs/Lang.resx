@@ -2332,7 +2332,7 @@ AI日志分析入口：服务器控制台的更多操作栏，或"更多功能"�
     <value>觉得好用？欢迎去 GitHub 留个脚印：</value>
   </data>
   <data name="Page_About_LoadMore" xml:space="preserve">
-    <value>展开更多...</value>
+    <value>查看更多...</value>
   </data>
   <data name="Page_About_OpenSourceRepo" xml:space="preserve">
     <value>项目开源仓库 (Github)</value>
