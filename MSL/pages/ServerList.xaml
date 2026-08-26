@@ -68,8 +68,8 @@
                             </hc:UniformSpacingPanel>
                             <hc:UniformSpacingPanel Spacing="2" Orientation="Horizontal">
                                 <Button Style="{StaticResource ButtonPrimary}" Content="{Binding [Page_ServerList_LaunchServer], Source={x:Static langs:LanguageManager.Instance}}" hc:IconElement.Geometry="{StaticResource CheckedGeometry}" hc:IconElement.Width="16" HorizontalAlignment="Left" Click="startServerBtn_Click"/>
-                                <Button hc:IconElement.Geometry="{StaticResource ConfigGeometry}" hc:IconElement.Height="16" HorizontalAlignment="Left" hc:Poptip.Content="{Binding [Page_ServerList_ServerSetting], Source={x:Static langs:LanguageManager.Instance}}" hc:Poptip.HorizontalOffset="40" hc:Poptip.Placement="Left" Click="setServerBtn_Click"/>
-                                <Button hc:IconElement.Geometry="{StaticResource DeleteFillCircleGeometry}" hc:IconElement.Height="16" HorizontalAlignment="Left" hc:Poptip.Content="{Binding [Page_ServerList_DeleteServer], Source={x:Static langs:LanguageManager.Instance}}" hc:Poptip.HorizontalOffset="40" hc:Poptip.Placement="Left" Click="delServerBtn_Click"/>
+                                <Button hc:IconElement.Geometry="{StaticResource ConfigGeometry}" hc:IconElement.Height="16" HorizontalAlignment="Left" hc:Poptip.Content="{Binding [Page_ServerList_ServerSetting], Source={x:Static langs:LanguageManager.Instance}}" hc:Poptip.Placement="Right" Click="setServerBtn_Click"/>
+                                <Button hc:IconElement.Geometry="{StaticResource DeleteFillCircleGeometry}" hc:IconElement.Height="16" HorizontalAlignment="Left" hc:Poptip.Content="{Binding [Page_ServerList_DeleteServer], Source={x:Static langs:LanguageManager.Instance}}" hc:Poptip.Placement="Right" Click="delServerBtn_Click"/>
                             </hc:UniformSpacingPanel>
                         </hc:UniformSpacingPanel>
                     </DataTemplate>

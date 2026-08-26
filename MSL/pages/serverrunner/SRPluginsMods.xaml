@@ -105,8 +105,7 @@
                                                 <DataTemplate>
                                                     <Button hc:IconElement.Width="14"
                                                             hc:Poptip.Content="{Binding [SR_ShowActions], Source={x:Static langs:LanguageManager.Instance}}"
-                                                            hc:Poptip.HorizontalOffset="40"
-                                                            hc:Poptip.Placement="Left"
+                                                            hc:Poptip.Placement="Right"
                                                             Click="MenuButton_Click"
                                                             ContextMenu="{StaticResource PluginListContextMenu}">
                                                         <Button.Content>
@@ -284,8 +283,7 @@
                                                 <DataTemplate>
                                                     <Button hc:IconElement.Width="14"
                                                             hc:Poptip.Content="{Binding [SR_ShowActions], Source={x:Static langs:LanguageManager.Instance}}"
-                                                            hc:Poptip.HorizontalOffset="40"
-                                                            hc:Poptip.Placement="Left"
+                                                            hc:Poptip.Placement="Right"
                                                             Click="MenuButton_Click"
                                                             Visibility="Collapsed"
                                                             ContextMenu="{StaticResource PluginListContextMenu}">

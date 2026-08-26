@@ -453,15 +453,15 @@
                                 <TextBlock Text="{Binding FileName}" Foreground="{DynamicResource SecondaryTextBrush}"
                                            FontSize="12" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
-                            <TextBlock Grid.Column="1" Text="{Binding Platform}" FontSize="12.5"
+                            <TextBlock Grid.Column="1" Text="{Binding Platform}" FontSize="13"
                                        VerticalAlignment="Center" TextTrimming="CharacterEllipsis" 
-                                       hc:Poptip.Content="{Binding Platform}" hc:Poptip.HorizontalOffset="40" hc:Poptip.Placement="Left" />
-                            <TextBlock Grid.Column="2" Text="{Binding Dependency}" FontSize="12.5"
+                                       hc:Poptip.Content="{Binding Platform}" hc:Poptip.Placement="Top" />
+                            <TextBlock Grid.Column="2" Text="{Binding Dependency}" FontSize="13"
                                        VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                                       hc:Poptip.Content="{Binding Dependency}" hc:Poptip.HorizontalOffset="40" hc:Poptip.Placement="Left" />
-                            <TextBlock Grid.Column="3" Text="{Binding MCVersion}" FontSize="12.5"
+                                       hc:Poptip.Content="{Binding Dependency}" hc:Poptip.Placement="Top" />
+                            <TextBlock Grid.Column="3" Text="{Binding MCVersion}" FontSize="13"
                                        VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                                       hc:Poptip.Content="{Binding MCVersion}" hc:Poptip.HorizontalOffset="40" hc:Poptip.Placement="Left" />
+                                       hc:Poptip.Content="{Binding MCVersion}" hc:Poptip.Placement="Top" />
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
