@@ -1,5 +1,4 @@
 ﻿using CurseForge.APIClient;
-using CurseForge.APIClient.Models;
 using CurseForge.APIClient.Models.Mods;
 using Modrinth;
 using Modrinth.Models;
@@ -25,10 +24,24 @@ namespace MSL
     {
         #region Fields & Properties
 
+        public enum LoadSourceEnum
+        {
+            CurseForge = 0,
+            Modrinth = 1
+        }
+        
+        public enum LoadTypeEnum
+        {
+            Mods = 0,
+            Modpacks = 1,
+            Plugins = 2,
+            Datapacks = 3
+        }
+
         private string FileName { get; set; }
         public Action<string> _onClose;
-        private int LoadType = 0;  // 0: mods, 1: modpacks, 2: plugins, 3: datapacks
-        private int LoadSource = 1; // 0: CurseForge, 1: Modrinth
+        private LoadTypeEnum LoadType = LoadTypeEnum.Mods;  // 0: mods, 1: modpacks, 2: plugins, 3: datapacks
+        private LoadSourceEnum LoadSource = LoadSourceEnum.Modrinth; // 0: CurseForge, 1: Modrinth
         private readonly bool CloseImmediately;
         private readonly string SavingPath;
         private ApiClient CurseForgeApiClient;
@@ -45,14 +58,14 @@ namespace MSL
 
         // Pagination
         private const int CF_PAGE_SIZE = 50;
-        private const int MODRINTH_PAGE_SIZE = 10;
+        private const int MODRINTH_PAGE_SIZE = 20;
 
         #endregion
 
         #region Constructor & Lifecycle
 
         public DownloadMod(Action<string> onClose, string savingPath,
-            int loadSource = 1, int loadType = 0,
+            LoadSourceEnum loadSource = LoadSourceEnum.Modrinth, LoadTypeEnum loadType = LoadTypeEnum.Mods,
             bool canChangeLoadType = true, bool canChangeSource = true, bool closeImmediately = false)
         {
             InitializeComponent();
@@ -62,8 +75,7 @@ namespace MSL
             LoadType = loadType;
 
             // Set source radio buttons
-            SourceModrinthBtn.IsChecked = loadSource == 1;
-            SourceCurseForgeBtn.IsChecked = loadSource == 0;
+            SourceComboBox.SelectedIndex = loadSource == LoadSourceEnum.CurseForge ? 1 : 0;
 
             // Set type radio buttons
             SetLoadTypeRadio(loadType);
@@ -77,22 +89,21 @@ namespace MSL
             }
             if (!canChangeSource)
             {
-                SourceModrinthBtn.IsEnabled = false;
-                SourceCurseForgeBtn.IsEnabled = false;
+                SourceComboBox.IsEnabled = false;
             }
             CloseImmediately = closeImmediately;
             UpdateSourceVisibility();
             UpdateTypeVisibility();
         }
 
-        private void SetLoadTypeRadio(int loadType)
+        private void SetLoadTypeRadio(LoadTypeEnum loadType)
         {
             switch (loadType)
             {
-                case 0: TypeModBtn.IsChecked = true; break;
-                case 1: TypeModpackBtn.IsChecked = true; break;
-                case 2: TypePluginBtn.IsChecked = true; break;
-                case 3: TypeDatapackBtn.IsChecked = true; break;
+                case LoadTypeEnum.Mods: TypeModBtn.IsChecked = true; break;
+                case LoadTypeEnum.Modpacks: TypeModpackBtn.IsChecked = true; break;
+                case LoadTypeEnum.Plugins: TypePluginBtn.IsChecked = true; break;
+                case LoadTypeEnum.Datapacks: TypeDatapackBtn.IsChecked = true; break;
             }
         }
 
@@ -122,55 +133,6 @@ namespace MSL
             return CurseForgeApiClient;
         }
 
-        private async Task LoadEvent_CurseForge()
-        {
-            try
-            {
-                var client = await EnsureCurseForgeClient();
-                ModList.ItemsSource = null;
-                ModList.Items.Clear();
-                var list = new List<DM_ModsInfo>();
-
-                if (LoadType == 0) // Mods
-                {
-                    var featuredMods = await client.GetFeaturedModsAsync(new GetFeaturedModsRequestBody
-                    {
-                        GameId = CF_GAME_ID,
-                        ExcludedModIds = new List<int>(),
-                        GameVersionTypeId = null,
-                    });
-
-                    foreach (var mod in featuredMods.Data.Popular)
-                    {
-                        list.Add(new DM_ModsInfo(
-                            mod.Id.ToString(),
-                            mod.Logo?.ThumbnailUrl ?? "",
-                            mod.Name,
-                            mod.Links?.WebsiteUrl?.ToString() ?? "",
-                            description: Truncate(mod.Summary, 120),
-                            downloadCountText: FormatDownloadCount(mod.DownloadCount)
-                        ));
-                    }
-                    NowPageLabel.Text = Lang.Form_DownloadMod_Featured;
-                }
-                else if (LoadType == 1) // Modpacks - FIXED: use classId instead of categoryId
-                {
-                    var modpacks = await client.SearchModsAsync(CF_GAME_ID, classId: CF_CLASSID_MODPACKS);
-                    foreach (var mod in modpacks.Data)
-                    {
-                        list.Add(CreateCFModInfo(mod));
-                    }
-                    NowPageLabel.Text = "1";
-                }
-
-                ModList.ItemsSource = list;
-            }
-            catch (Exception ex)
-            {
-                MagicShow.ShowMsgDialog(FatherWindow, Lang.Form_DownloadMod_FetchFailed + ex.Message, "错误");
-            }
-        }
-
         private async Task Search_CurseForge(string name, int index = 0)
         {
             try
@@ -180,7 +142,7 @@ namespace MSL
                 ModList.Items.Clear();
                 var list = new List<DM_ModsInfo>();
 
-                int? classId = LoadType == 1 ? CF_CLASSID_MODPACKS : CF_CLASSID_MODS;
+                int? classId = LoadType == LoadTypeEnum.Modpacks ? CF_CLASSID_MODPACKS : CF_CLASSID_MODS;
                 int? categoryId = GetSelectedCurseForgeCategoryId();
                 var sortField = GetCurseForgeSortField();
 
@@ -257,7 +219,7 @@ namespace MSL
             using var semaphore = new SemaphoreSlim(50);
             bool onlyShowServerPack = false;
 
-            if (LoadType == 1 && await MagicShow.ShowMsgDialogAsync(FatherWindow,
+            if (LoadType == LoadTypeEnum.Modpacks && await MagicShow.ShowMsgDialogAsync(FatherWindow,
                 Lang.Form_DownloadMod_ServerPackConfirm, "询问", true) == true)
             {
                 onlyShowServerPack = true;
@@ -271,11 +233,11 @@ namespace MSL
                     DM_ModInfo modInfo = null;
                     DM_ModInfo _modInfo = null;
 
-                    if (LoadType == 0)
+                    if (LoadType == LoadTypeEnum.Mods)
                     {
                         modInfo = await CreateModInfoFromCF(modData);
                     }
-                    else if (LoadType == 1)
+                    else if (LoadType == LoadTypeEnum.Modpacks)
                     {
                         if (!onlyShowServerPack)
                         {
@@ -304,7 +266,6 @@ namespace MSL
                         if (_modInfo != null)
                             ModVerList.Items.Add(_modInfo);
                         loadedCount++;
-                        ModInfoLoadingProcess.Text = $"{loadedCount}/{totalCount}";
                     });
                 }
                 catch (Exception ex)
@@ -368,9 +329,9 @@ namespace MSL
             // Project type
             switch (LoadType)
             {
-                case 0: facets.Add(Facet.ProjectType(Modrinth.Models.Enums.Project.ProjectType.Mod)); break;
-                case 1: facets.Add(Facet.ProjectType(Modrinth.Models.Enums.Project.ProjectType.Modpack)); break;
-                case 3: facets.Add(Facet.ProjectType(Modrinth.Models.Enums.Project.ProjectType.Datapack)); break;
+                case LoadTypeEnum.Mods: facets.Add(Facet.ProjectType(Modrinth.Models.Enums.Project.ProjectType.Mod)); break;
+                case LoadTypeEnum.Modpacks: facets.Add(Facet.ProjectType(Modrinth.Models.Enums.Project.ProjectType.Modpack)); break;
+                case LoadTypeEnum.Datapacks: facets.Add(Facet.ProjectType(Modrinth.Models.Enums.Project.ProjectType.Datapack)); break;
                 default: facets.Add(Facet.ProjectType(Modrinth.Models.Enums.Project.ProjectType.Plugin)); break;
             }
 
@@ -381,7 +342,7 @@ namespace MSL
 
             // Loader
             string loader = GetSelectedLoader();
-            if (!string.IsNullOrEmpty(loader) && (LoadType == 0 || LoadType == 1))
+            if (!string.IsNullOrEmpty(loader) && (LoadType == LoadTypeEnum.Mods || LoadType == LoadTypeEnum.Modpacks))
                 facets.Add(Facet.Category(loader));
 
             // Modrinth category tag
@@ -390,34 +351,6 @@ namespace MSL
                 facets.Add(Facet.Category(categoryTag));
 
             return facets;
-        }
-
-        private async Task LoadEvent_Modrinth()
-        {
-            try
-            {
-                await EnsureModrinthClient();
-                ModList.ItemsSource = null;
-                ModList.Items.Clear();
-                var list = new List<DM_ModsInfo>();
-
-                var facets = BuildModrinthFacets();
-                var mods = await ModrinthApiClient.Project.SearchAsync("", facets: facets);
-
-                foreach (var mod in mods?.Hits)
-                {
-                    list.Add(CreateModrinthModInfo(mod));
-                }
-
-                ModList.ItemsSource = list;
-                NowPageLabel.Text = "1";
-            }
-            catch (OperationCanceledException) { }
-            catch (ObjectDisposedException) { }
-            catch (Exception ex)
-            {
-                MagicShow.ShowMsgDialog(FatherWindow, Lang.Form_DownloadMod_FetchFailed + ex.Message, "错误");
-            }
         }
 
         private async Task Search_Modrinth(string name, int offset = 0)
@@ -450,24 +383,7 @@ namespace MSL
             }
         }
 
-        private DM_ModsInfo CreateModrinthModInfo(Project mod)
-        {
-            var categories = mod.Categories?.Take(4).ToList() ?? new List<string>();
-            return new DM_ModsInfo(
-                mod.Id,
-                mod.IconUrl ?? "",
-                mod.Title,
-                mod.Url ?? "",
-                description: Truncate(mod.Description, 120),
-                author: mod.Team ?? "",
-                downloadCountText: FormatDownloadCount(mod.Downloads),
-                lastUpdatedText: FormatRelativeTime(mod.Updated),
-                categoryText: string.Join(", ", categories),
-                categoryTags: categories
-            );
-        }
-
-        private DM_ModsInfo CreateModrinthModInfo(Modrinth.Models.SearchResult mod)
+        private DM_ModsInfo CreateModrinthModInfo(SearchResult mod)
         {
             var categories = mod.Categories?.Take(4).ToList() ?? new List<string>();
             return new DM_ModsInfo(
@@ -498,7 +414,6 @@ namespace MSL
         private async Task ModInfo_Modrinth(DM_ModsInfo info, string MCVersion = "0")
         {
             var modInfo = await ModrinthApiClient.Project.GetAsync(info.ID);
-            ModInfoLoadingProcess.Text = Lang.Form_DownloadMod_Loading;
             VerFilterCombo.Items.Add(Lang.Form_DownloadMod_All);
             VerFilterCombo.SelectedIndex = 0;
             foreach (var gameVersion in modInfo.GameVersions.Reverse())
@@ -530,21 +445,25 @@ namespace MSL
         #endregion
 
         #region UI Event Handlers
+        private void ShowLoadingIndicator(bool show)
+        {
+            lb01.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+            lbCircle.IsRunning = show;
+            ModListGrid.IsEnabled = !show;
+        }
+
 
         private async void searchMod_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                ModListGrid.IsEnabled = false;
-                lb01.Visibility = Visibility.Visible;
-
+                ShowLoadingIndicator(true);
                 if (LoadSource == 0)
                     await Search_CurseForge(SearchTextBox.Text);
                 else
                     await Search_Modrinth(SearchTextBox.Text);
 
-                lb01.Visibility = Visibility.Collapsed;
-                ModListGrid.IsEnabled = true;
+                ShowLoadingIndicator(false);
                 NowPageLabel.Text = "1";
             }
             catch (Exception ex)
@@ -577,16 +496,14 @@ namespace MSL
 
                 if (nowPage <= 1) return;
 
-                ModListGrid.IsEnabled = false;
-                lb01.Visibility = Visibility.Visible;
+                ShowLoadingIndicator(true);
 
                 if (LoadSource == 0)
                     await Search_CurseForge(SearchTextBox.Text, (nowPage - 2) * CF_PAGE_SIZE);
                 else
                     await Search_Modrinth(SearchTextBox.Text, (nowPage - 2) * MODRINTH_PAGE_SIZE);
 
-                lb01.Visibility = Visibility.Collapsed;
-                ModListGrid.IsEnabled = true;
+                ShowLoadingIndicator(false);
                 NowPageLabel.Text = (nowPage - 1).ToString();
             }
             catch (Exception ex)
@@ -605,16 +522,14 @@ namespace MSL
                 else
                     nowPage = int.Parse(NowPageLabel.Text);
 
-                ModListGrid.IsEnabled = false;
-                lb01.Visibility = Visibility.Visible;
+                ShowLoadingIndicator(true);
 
                 if (LoadSource == 0)
                     await Search_CurseForge(SearchTextBox.Text, nowPage * CF_PAGE_SIZE);
                 else
                     await Search_Modrinth(SearchTextBox.Text, nowPage * MODRINTH_PAGE_SIZE);
 
-                lb01.Visibility = Visibility.Collapsed;
-                ModListGrid.IsEnabled = true;
+                ShowLoadingIndicator(false);
                 NowPageLabel.Text = (nowPage + 1).ToString();
             }
             catch (Exception ex)
@@ -623,10 +538,10 @@ namespace MSL
             }
         }
 
-        private void SourceBtn_CheckedChanged(object sender, RoutedEventArgs e)
+        private void SourceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!IsLoaded || _isLoading) return;
-            LoadSource = SourceCurseForgeBtn.IsChecked == true ? 0 : 1;
+            LoadSource = SourceComboBox.SelectedIndex == 1 ? LoadSourceEnum.CurseForge : LoadSourceEnum.Modrinth;
             UpdateSourceVisibility();
             _ = LoadEvent();
         }
@@ -634,10 +549,10 @@ namespace MSL
         private void TypeBtn_CheckedChanged(object sender, RoutedEventArgs e)
         {
             if (!IsLoaded || _isLoading) return;
-            if (TypeModBtn.IsChecked == true) LoadType = 0;
-            else if (TypeModpackBtn.IsChecked == true) LoadType = 1;
-            else if (TypePluginBtn.IsChecked == true) LoadType = 2;
-            else if (TypeDatapackBtn.IsChecked == true) LoadType = 3;
+            if (TypeModBtn.IsChecked == true) LoadType = LoadTypeEnum.Mods;
+            else if (TypeModpackBtn.IsChecked == true) LoadType = LoadTypeEnum.Modpacks;
+            else if (TypePluginBtn.IsChecked == true) LoadType = LoadTypeEnum.Plugins;
+            else if (TypeDatapackBtn.IsChecked == true) LoadType = LoadTypeEnum.Datapacks;
             UpdateTypeVisibility();
             _ = LoadEvent();
         }
@@ -645,16 +560,16 @@ namespace MSL
         private void UpdateSourceVisibility()
         {
             // CurseForge doesn't support plugins/datapacks
-            if (LoadSource == 0)
+            if (LoadSource == LoadSourceEnum.CurseForge)
             {
                 TypePluginBtn.Visibility = Visibility.Collapsed;
                 TypeDatapackBtn.Visibility = Visibility.Collapsed;
                 CurseForgeCategoryPanel.Visibility = Visibility.Visible;
                 ModrinthCategoryPanel.Visibility = Visibility.Collapsed;
                 // If currently on plugin/datapack, switch to mods (with guard to prevent re-entry)
-                if (LoadType == 2 || LoadType == 3)
+                if (LoadType == LoadTypeEnum.Plugins || LoadType == LoadTypeEnum.Datapacks)
                 {
-                    LoadType = 0;
+                    LoadType = LoadTypeEnum.Mods;
                     _isLoading = true;
                     TypeModBtn.IsChecked = true;
                     _isLoading = false;
@@ -672,7 +587,7 @@ namespace MSL
         private void UpdateTypeVisibility()
         {
             // Show/hide loader filter based on type
-            bool showLoader = LoadType == 0 || LoadType == 1;
+            bool showLoader = LoadType == LoadTypeEnum.Mods || LoadType == LoadTypeEnum.Modpacks;
             LoaderFilterTitle.Visibility = showLoader ? Visibility.Visible : Visibility.Collapsed;
             LoaderFilterPanel.Visibility = showLoader ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -755,7 +670,7 @@ namespace MSL
 
         private string GetSelectedModrinthCategory()
         {
-            if (LoadSource != 1) return null;
+            if (LoadSource != LoadSourceEnum.Modrinth) return null;
             var selected = ModrinthCategoryCombo.SelectedItem as ComboBoxItem;
             var content = selected?.Content?.ToString();
             if (content == "全部标签" || string.IsNullOrEmpty(content)) return null;
@@ -772,16 +687,13 @@ namespace MSL
             try
             {
                 var info = ModList.SelectedItem as DM_ModsInfo;
-                backBtn.IsEnabled = false;
+                ShowLoadingIndicator(true);
                 ModInfoGrid.Visibility = Visibility.Visible;
                 ModIconLabel.Source = string.IsNullOrEmpty(info.Icon) ? null : new BitmapImage(new Uri(info.Icon));
                 ModNameLabel.Text = info.Name;
                 ModWebsiteUrl.Subject = info.WebsiteUrl;
                 ModWebsiteUrl.CommandParameter = info.WebsiteUrl;
-                ModInfoLoadingProcess.Text = "0/0";
-                ModInfoLoadingProcess.Visibility = Visibility.Visible;
                 VerFilterCombo.Items.Clear();
-                VerFilterCombo.IsEnabled = false;
 
                 if (LoadSource == 0)
                 {
@@ -793,7 +705,6 @@ namespace MSL
                     VerFilterPannel.Visibility = Visibility.Visible;
                     await ModInfo_Modrinth(info, MinecraftVersionTypeBox.SelectedIndex == 0 ? "0" : MinecraftVersionTypeBox.Text);
                 }
-                ModInfoLoadingProcess.Visibility = Visibility.Collapsed;
             }
             catch (Exception ex)
             {
@@ -801,8 +712,7 @@ namespace MSL
             }
             finally
             {
-                backBtn.IsEnabled = true;
-                VerFilterCombo.IsEnabled = true;
+                ShowLoadingIndicator(false);
                 VerFilter_SelectionChanged(null, null);
             }
         }
@@ -906,8 +816,7 @@ namespace MSL
         private async Task LoadEvent()
         {
             _isLoading = true;
-            lb01.Visibility = Visibility.Visible;
-            ModListGrid.IsEnabled = false;
+            ShowLoadingIndicator(true);
             try
             {
                 if (LoadSource == 0)
@@ -918,9 +827,72 @@ namespace MSL
             }
             finally
             {
-                lb01.Visibility = Visibility.Collapsed;
-                ModListGrid.IsEnabled = true;
+                ShowLoadingIndicator(false);
                 _isLoading = false;
+            }
+        }
+
+        private async Task LoadEvent_Modrinth()
+        {
+            try
+            {
+                await EnsureModrinthClient();
+                await Search_Modrinth("");
+            }
+            catch (OperationCanceledException) { }
+            catch (ObjectDisposedException) { }
+            catch (Exception ex)
+            {
+                MagicShow.ShowMsgDialog(FatherWindow, Lang.Form_DownloadMod_FetchFailed + ex.Message, "错误");
+            }
+        }
+
+        private async Task LoadEvent_CurseForge()
+        {
+            try
+            {
+                var client = await EnsureCurseForgeClient();
+                ModList.ItemsSource = null;
+                ModList.Items.Clear();
+                var list = new List<DM_ModsInfo>();
+
+                if (LoadType == 0) // Mods
+                {
+                    var featuredMods = await client.GetFeaturedModsAsync(new GetFeaturedModsRequestBody
+                    {
+                        GameId = CF_GAME_ID,
+                        ExcludedModIds = new List<int>(),
+                        GameVersionTypeId = null,
+                    });
+
+                    foreach (var mod in featuredMods.Data.Popular)
+                    {
+                        list.Add(new DM_ModsInfo(
+                            mod.Id.ToString(),
+                            mod.Logo?.ThumbnailUrl ?? "",
+                            mod.Name,
+                            mod.Links?.WebsiteUrl?.ToString() ?? "",
+                            description: Truncate(mod.Summary, 120),
+                            downloadCountText: FormatDownloadCount(mod.DownloadCount)
+                        ));
+                    }
+                    NowPageLabel.Text = Lang.Form_DownloadMod_Featured;
+                }
+                else if (LoadType == LoadTypeEnum.Modpacks) // Modpacks - FIXED: use classId instead of categoryId
+                {
+                    var modpacks = await client.SearchModsAsync(CF_GAME_ID, classId: CF_CLASSID_MODPACKS);
+                    foreach (var mod in modpacks.Data)
+                    {
+                        list.Add(CreateCFModInfo(mod));
+                    }
+                    NowPageLabel.Text = "1";
+                }
+
+                ModList.ItemsSource = list;
+            }
+            catch (Exception ex)
+            {
+                MagicShow.ShowMsgDialog(FatherWindow, Lang.Form_DownloadMod_FetchFailed + ex.Message, "错误");
             }
         }
 
@@ -1006,8 +978,6 @@ namespace MSL
             ModList.Items.Clear();
             ModVerList.Items.Clear();
             VerFilter_VersList.Clear();
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
             GC.Collect();
         }
 

@@ -229,22 +229,22 @@
     <Compile Include="forms\ServerRunner.xaml.cs">
       <DependentUpon>ServerRunner.xaml</DependentUpon>
     </Compile>
-    <Compile Include="pages\serverrunner\SRPluginsMods.xaml.cs">
+    <Compile Include="pages\serverRunner\SRPluginsMods.xaml.cs">
       <DependentUpon>SRPluginsMods.xaml</DependentUpon>
     </Compile>
-    <Compile Include="pages\serverrunner\SRDashboard.xaml.cs">
+    <Compile Include="pages\serverRunner\SRDashboard.xaml.cs">
       <DependentUpon>SRDashboard.xaml</DependentUpon>
     </Compile>
-    <Compile Include="pages\serverrunner\SRConsole.xaml.cs">
+    <Compile Include="pages\serverRunner\SRConsole.xaml.cs">
       <DependentUpon>SRConsole.xaml</DependentUpon>
     </Compile>
-    <Compile Include="pages\serverrunner\SRInstanceSettings.xaml.cs">
+    <Compile Include="pages\serverRunner\SRInstanceSettings.xaml.cs">
       <DependentUpon>SRInstanceSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="pages\serverrunner\SRMoreFunctions.xaml.cs">
+    <Compile Include="pages\serverRunner\SRMoreFunctions.xaml.cs">
       <DependentUpon>SRMoreFunctions.xaml</DependentUpon>
     </Compile>
-    <Compile Include="pages\serverrunner\SRTimerTasks.xaml.cs">
+    <Compile Include="pages\serverRunner\SRTimerTasks.xaml.cs">
       <DependentUpon>SRTimerTasks.xaml</DependentUpon>
     </Compile>
     <Compile Include="forms\FrpProvider.xaml.cs">
@@ -409,27 +409,27 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="pages\serverrunner\SRPluginsMods.xaml">
+    <Page Include="pages\serverRunner\SRPluginsMods.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="pages\serverrunner\SRDashboard.xaml">
+    <Page Include="pages\serverRunner\SRDashboard.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="pages\serverrunner\SRConsole.xaml">
+    <Page Include="pages\serverRunner\SRConsole.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="pages\serverrunner\SRInstanceSettings.xaml">
+    <Page Include="pages\serverRunner\SRInstanceSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="pages\serverrunner\SRMoreFunctions.xaml">
+    <Page Include="pages\serverRunner\SRMoreFunctions.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="pages\serverrunner\SRTimerTasks.xaml">
+    <Page Include="pages\serverRunner\SRTimerTasks.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using static MSL.DownloadMod;
 using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 using Path = System.IO.Path;
@@ -107,7 +108,7 @@ namespace MSL.pages
                     this.Content = tempContent;
                     downloadModPage.Dispose();
                     downloadModPage = null;
-                }, "MSL\\Downloads", 0, 1, false, true, true);
+                }, "MSL\\Downloads", LoadSourceEnum.Modrinth, LoadTypeEnum.Modpacks, false, true, true);
 
                 this.Content = downloadModPage;
 
@@ -1533,9 +1534,7 @@ namespace MSL.pages
             sjava.IsEnabled = false;
             sserver.IsEnabled = false;
             sJVM.IsEnabled = false;
-            GC.Collect(); // find finalizable objects
-            GC.WaitForPendingFinalizers(); // wait until finalizers executed
-            GC.Collect(); // collect finalized objects
+            GC.Collect();
         }
 
         // 快捷设置ygg api

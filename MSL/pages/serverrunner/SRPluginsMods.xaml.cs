@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using static MSL.DownloadMod;
 
 namespace MSL.pages.serverrunner
 {
@@ -81,10 +82,10 @@ namespace MSL.pages.serverrunner
         /// </summary>
         private static void RefreshTab(
             string directory,
-            System.Windows.Controls.TabItem tabItem,
+            TabItem tabItem,
             UIElement managedCard,
-            System.Func<UIElement> createNoContent,
-            System.Action bindList)
+            Func<UIElement> createNoContent,
+            Action bindList)
         {
             if (Directory.Exists(directory))
             {
@@ -204,10 +205,10 @@ namespace MSL.pages.serverrunner
         }
 
         private void DownloadPluginBtn_Click(object sender, RoutedEventArgs e)
-            => OpenDownloadDialog(PluginsDir, resourceType: 1, pageIndex: 2);
+            => OpenDownloadDialog(PluginsDir, resourceType: LoadSourceEnum.Modrinth, loadType: LoadTypeEnum.Plugins);
 
         private void DownloadModBtn_Click(object sender, RoutedEventArgs e)
-            => OpenDownloadDialog(ModsDir, resourceType: 0, pageIndex: 0);
+            => OpenDownloadDialog(ModsDir, resourceType: LoadSourceEnum.Modrinth, loadType: LoadTypeEnum.Mods);
 
         private void MenuButton_Click(object sender, RoutedEventArgs e)
         {
@@ -268,18 +269,19 @@ namespace MSL.pages.serverrunner
             => Process.Start(new ProcessStartInfo("explorer.exe", directory));
 
         /// <summary>打开下载模组/插件的对话框。</summary>
-        private void OpenDownloadDialog(string targetDir, int resourceType, int pageIndex)
+        private void OpenDownloadDialog(string targetDir, LoadSourceEnum resourceType, LoadTypeEnum loadType)
         {
+            var thisPage = this.Content;
             DownloadMod downloadModPage = null;
             downloadModPage = new DownloadMod((string filename) =>
             {
                 ReFreshPluginsAndMods();
-                _parent.RestoreContent();
+                this.Content = thisPage;
                 downloadModPage.Dispose();
                 downloadModPage = null;
-            }, targetDir, resourceType, pageIndex, false);
+            }, targetDir, resourceType, loadType, false);
 
-            _parent.SetContent(downloadModPage);
+            this.Content = downloadModPage;
         }
 
         // 检测客户端模组

@@ -93,7 +93,7 @@
             </Grid.RowDefinitions>
 
             <!-- Top Bar: Back + Source Tabs + Search -->
-            <Border Grid.Row="0" Background="{DynamicResource RegionBrush}" Padding="12,8"
+            <Border Grid.Row="0" Background="{DynamicResource BorderBackground}" Padding="12,8"
                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -108,12 +108,11 @@
 
                     <!-- Source Tabs -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
-                        <RadioButton x:Name="SourceModrinthBtn" Content="Modrinth" GroupName="Source"
-                                     IsChecked="True" Checked="SourceBtn_CheckedChanged"
-                                     Style="{StaticResource RadioButtonSameAsButtonDefault}" Padding="12,6" Margin="0,0,4,0"/>
-                        <RadioButton x:Name="SourceCurseForgeBtn" Content="CurseForge" GroupName="Source"
-                                     Checked="SourceBtn_CheckedChanged"
-                                     Style="{StaticResource RadioButtonSameAsButtonDefault}" Padding="12,6"/>
+                        <TextBlock Text="来源：" FontSize="13" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <ComboBox x:Name="SourceComboBox" SelectionChanged="SourceComboBox_SelectionChanged" MinWidth="120">
+                            <ComboBoxItem Content="Modrinth" IsSelected="True"/>
+                            <ComboBoxItem x:Name="SourceCurseForgeItem" Content="CurseForge"/>
+                        </ComboBox>
                     </StackPanel>
 
                     <!-- Search Box -->
@@ -165,7 +164,7 @@
                     <ListBox Grid.Row="0" x:Name="ModList"
                              MouseDoubleClick="ModList_MouseDoubleClick"
                              BorderThickness="0"
-                             Margin="3"
+                             Margin="3" Background="{DynamicResource BorderBackground}"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              VirtualizingPanel.IsVirtualizing="True"
                              VirtualizingPanel.ScrollUnit="Pixel"
@@ -205,6 +204,7 @@
                                             <!-- Name + Author -->
                                             <StackPanel Grid.Row="0" Orientation="Horizontal">
                                                 <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"
+                                                           Foreground="{DynamicResource PrimaryTextBrush}"
                                                            TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
                                                 <TextBlock Text="{Binding Author, StringFormat=' by {0}'}" FontSize="12"
                                                            Foreground="{DynamicResource SecondaryTextBrush}"
@@ -253,7 +253,7 @@
                     </ListBox>
 
                     <!-- Pagination -->
-                    <Border Grid.Row="1" Padding="8" Background="{DynamicResource RegionBrush}"
+                    <Border Grid.Row="1" Padding="8" Background="{DynamicResource BorderBackground}"
                             BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Button x:Name="LastPageBtn" Content="← 上一页" Click="LastPageBtn_Click" Padding="12,5" Margin="0,0,6,0"/>
@@ -263,7 +263,7 @@
                             <TextBlock Text=" 页" FontSize="13" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}"/>
                             <Button x:Name="NextPageBtn" Content="下一页 →" Click="NextPageBtn_Click" Padding="12,5" Margin="6,0,0,0"/>
                             <Button x:Name="homeBtn" Content="🏠 推荐" Click="homeBtn_Click" Padding="12,5" Margin="16,0,0,0"
-                                    Visibility="{Binding ElementName=SourceCurseForgeBtn, Path=IsChecked, Converter={StaticResource BoolToVis}}"/>
+                                    Visibility="{Binding ElementName=SourceCurseForgeItem, Path=IsSelected, Converter={StaticResource BoolToVis}}"/>
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -272,7 +272,7 @@
                 <Border Grid.Column="1" Width="1" Background="{DynamicResource BorderBrush}"/>
 
                 <!-- Right: Filter Sidebar -->
-                <Border Grid.Column="2" Background="{DynamicResource RegionBrush}" Padding="0">
+                <Border Grid.Column="2" Background="{DynamicResource BorderBackground}" Padding="0">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12,10">
                         <StackPanel>
                             <!-- MC Version Filter -->
@@ -404,13 +404,9 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <StackPanel x:Name="VerFilterPannel" Orientation="Horizontal" Margin="0,0,12,0">
-                            <TextBlock Text="版本筛选：" FontSize="13" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                            <ComboBox x:Name="VerFilterCombo" SelectionChanged="VerFilter_SelectionChanged" MinWidth="120"/>
-                        </StackPanel>
-                        <TextBlock x:Name="ModInfoLoadingProcess" FontSize="13"
-                                   Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center"/>
+                    <StackPanel Grid.Column="2" x:Name="VerFilterPannel" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="版本筛选：" FontSize="13" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <ComboBox x:Name="VerFilterCombo" SelectionChanged="VerFilter_SelectionChanged" MinWidth="120"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -458,19 +454,30 @@
                                            FontSize="12" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                             <TextBlock Grid.Column="1" Text="{Binding Platform}" FontSize="12.5"
-                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" 
+                                       hc:Poptip.Content="{Binding Platform}" hc:Poptip.HorizontalOffset="40" hc:Poptip.Placement="Left" />
                             <TextBlock Grid.Column="2" Text="{Binding Dependency}" FontSize="12.5"
-                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                       hc:Poptip.Content="{Binding Dependency}" hc:Poptip.HorizontalOffset="40" hc:Poptip.Placement="Left" />
                             <TextBlock Grid.Column="3" Text="{Binding MCVersion}" FontSize="12.5"
-                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                       hc:Poptip.Content="{Binding MCVersion}" hc:Poptip.HorizontalOffset="40" hc:Poptip.Placement="Left" />
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
         </Grid>
         <!-- ========== Loading Indicator ========== -->
-        <TextBlock x:Name="lb01" Text="{Binding [Loading_PlzWait], Source={x:Static langs:LanguageManager.Instance}}"
-           FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="-230,0,0,0"
-           Foreground="{DynamicResource DarkPrimaryBrush}"/>
+        <Border x:Name="lb01" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Collapsed">
+            <Border.Background>
+                <SolidColorBrush Color="Gray" Opacity="0.3"/>
+            </Border.Background>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <hc:LoadingCircle x:Name="lbCircle" IsRunning="False" Margin="0,0,10,0"/>
+                <TextBlock Text="{Binding [Loading_PlzWait], Source={x:Static langs:LanguageManager.Instance}}"
+                           FontSize="16" VerticalAlignment="Center"
+                           Foreground="{DynamicResource DarkPrimaryBrush}"/>
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>

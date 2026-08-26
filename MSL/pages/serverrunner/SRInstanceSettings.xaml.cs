@@ -548,6 +548,7 @@ namespace MSL.pages.serverrunner
             {
                 jVMcmd.Clear();
             }
+            var thisPage = this.Content;
             DownloadServer downloadServerPage = null;
             downloadServerPage = new DownloadServer((string filename) =>
             {
@@ -561,12 +562,12 @@ namespace MSL.pages.serverrunner
                     server.Text = filename;
                     Growl.Success(LanguageManager.Instance["SR_ServerDownloadDone"]);
                 }
-                _parent.RestoreContent();
+                this.Content = thisPage;
                 downloadServerPage.Dispose();
                 downloadServerPage = null;
             }, _serverService.ServerBase, DownloadServer.Mode.ChangeServerSettings, _serverService.ServerJava);
 
-            _parent.SetContent(downloadServerPage);
+            this.Content = downloadServerPage;
         }
 
         private void autoSetMemory_Click(object sender, RoutedEventArgs e)

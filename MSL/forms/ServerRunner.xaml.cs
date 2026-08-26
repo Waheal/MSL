@@ -46,8 +46,6 @@ namespace MSL
         private SRMoreFunctions _moreFunctionsPage;
         private SRTimerTasks _timerTasksPage;
 
-        // 备份用
-        private UIElement _savedContent;
         #endregion
 
         #region 构造函数
@@ -304,9 +302,9 @@ namespace MSL
         public string GameDifficultyText { get => _dashboardPage.GameDifficultyText; set => _dashboardPage.GameDifficultyText = value; }
         public string ServerIPText { get => _dashboardPage.ServerIPText; set => _dashboardPage.ServerIPText = value; }
         public string LocalIPText { get => _dashboardPage.LocalIPText; set => _dashboardPage.LocalIPText = value; }
-        public System.Windows.Controls.ListBox ServerPlayerList => _dashboardPage.PlayerListBox;
+        public ListBox ServerPlayerList => _dashboardPage.PlayerListBox;
         public System.Windows.Documents.Run ServerStateLab => _dashboardPage.ServerStateLabel;
-        public System.Windows.Controls.Button SolveProblemBtn => _dashboardPage.SolveProblemButton;
+        public Button SolveProblemBtn => _dashboardPage.SolveProblemButton;
         public System.Windows.Controls.Primitives.ToggleButton DashboardControlToggle => _dashboardPage.ControlToggleButton;
 
         // 转发到 Console 页面
@@ -314,7 +312,7 @@ namespace MSL
         public System.Windows.Controls.Primitives.ToggleButton ConsoleControlToggle => _consolePage.ControlToggleButton;
         public System.Windows.Controls.Primitives.ToggleButton AutoClearOutlogToggle => _moreFunctionsPage.AutoClearOutlogToggleButton;
         public System.Windows.Controls.ComboBox FastCmdList => _consolePage.FastCmdComboBox;
-        public System.Windows.Controls.Button OutputCmdEncodingButton => _moreFunctionsPage.OutputCmdEncodingButton;
+        public Button OutputCmdEncodingButton => _moreFunctionsPage.OutputCmdEncodingButton;
         public System.Windows.Controls.Primitives.ToggleButton AutoStartServerToggle => _moreFunctionsPage.AutoStartServerToggleButton;
         public bool MoreOperationEnabled { get => _consolePage.MoreOperationCombo?.IsEnabled ?? true; set { if (_consolePage.MoreOperationCombo != null) _consolePage.MoreOperationCombo.IsEnabled = value; } }
         public short GetServerInfoLine { get => _dashboardPage.GetServerInfoLine; set => _dashboardPage.GetServerInfoLine = value; }
@@ -357,22 +355,6 @@ namespace MSL
                     ServerService.ServerProcess.Kill();
             }
             catch { }
-        }
-
-        // 内容替换（用于下载对话框等覆盖窗口的场景）
-        public void SetContent(UIElement content)
-        {
-            _savedContent = pageContent.Content as UIElement;
-            pageContent.Content = content;
-        }
-
-        public void RestoreContent()
-        {
-            if (_savedContent != null)
-            {
-                pageContent.Content = _savedContent;
-                _savedContent = null;
-            }
         }
 
         // 备份
